@@ -1,0 +1,34 @@
+package common.exceptions;
+
+@SuppressWarnings("serial")
+public class DisconnectionException extends Exception {
+	
+	public DisconnectionException() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
+	public DisconnectionException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+		super(message, cause, enableSuppression, writableStackTrace);
+		// TODO Auto-generated constructor stub
+	}
+
+	public DisconnectionException(String message, Throwable cause) {
+		super(message, cause);
+		// TODO Auto-generated constructor stub
+	}
+
+	public DisconnectionException(String message) {
+		super(message);
+		// TODO Auto-generated constructor stub
+	}
+
+	public DisconnectionException(Throwable cause) {
+		super(cause);
+		// TODO Auto-generated constructor stub
+	}
+
+	public String getMessage() {
+		return super.getMessage();
+	}
+}
