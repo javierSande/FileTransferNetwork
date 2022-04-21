@@ -117,6 +117,25 @@ public class Client implements Observable<Client> {
 		return usersOnServer.getUsers();
 	}
 	
+	public List<String> getSharedFiles() {
+		return new ArrayList<String>(filesToShare.keySet());
+	}
+	
+	public void addSharedFiles(Map<String, String> files) {
+		filesToShare.putAll(files);
+		notifyChange();
+	}
+	
+	public void deleteSharedFiles(List<String> file) {
+		for (String f: file)
+			deleteSharedFile(f);
+	}
+	
+	public void deleteSharedFile(String file) {
+		filesToShare.remove(file);
+		notifyChange();
+	}
+	
 	public List<String> getFilesList() {
 		List<String> list = new ArrayList<String>();
 		for (String f: filesOnServer.getFiles()) {
@@ -137,9 +156,7 @@ public class Client implements Observable<Client> {
 	public void updateServerInfo(List<User> users, Set<String> files) {
 		usersOnServer.setUsers(users);
 		filesOnServer.setFiles(files);
-		for (Observer<Client> o: observers) {
-			o.update(this);
-		}
+		notifyChange();
 	}
 	
 	
@@ -153,6 +170,12 @@ public class Client implements Observable<Client> {
 	public void addObserver(Observer<Client> o) {
 		observers.add(o);
 		o.update(this);
+	}
+	
+	public void notifyChange() {
+		for (Observer<Client> o: observers) {
+			o.update(this);
+		}
 	}
 	
 	

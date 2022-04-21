@@ -2,12 +2,16 @@ package server.view;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Point;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
+import javax.swing.Box;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 
 import server.view.files.*;
 import server.view.users.UsersTablePanel;
@@ -16,6 +20,8 @@ import server.network.Server;
 @SuppressWarnings("serial")
 public class ServerWindow extends JFrame {
 
+	private JPanel connectionLabel;
+	
     private UsersTablePanel usersPanel;
     private FilesTablePanel filesPanel;
 
@@ -29,22 +35,37 @@ public class ServerWindow extends JFrame {
     private boolean init() {
     	
     	this.setDefaultCloseOperation(EXIT_ON_CLOSE);
-        this.setTitle(String.format("Server at port: %d", server.getPort()));
+        this.setTitle("Server");
         this.setPreferredSize(new Dimension(860, 580));
         this.setLocation(25, 50);
         this.setBackground(Color.WHITE);
         this.setLayout(null);
+        
+        connectionLabel = new JPanel();
+        connectionLabel.setLayout(new FlowLayout(FlowLayout.LEFT));
+        connectionLabel.setSize(new Dimension(800, 30));
+        connectionLabel.setLocation(new Point(20,0));
+        this.add(connectionLabel);
+        
+        JLabel ipLabel = new JLabel(String.format("IP: %s", server.getIp()));
+        connectionLabel.add(ipLabel);
+        
+        connectionLabel.add(Box.createHorizontalStrut(20));
+        
+        JLabel portLabel = new JLabel(String.format("Port: %d", server.getPort()));
+        connectionLabel.add(portLabel);
+        
 
         //Users Panel
         usersPanel = new UsersTablePanel(server);
         usersPanel.setSize(new Dimension(500, 500));
-        usersPanel.setLocation(new Point(20,20));
+        usersPanel.setLocation(new Point(20,30));
         this.add(usersPanel);
         
         //Files Panel
         filesPanel = new FilesTablePanel(server);
         filesPanel.setSize(new Dimension(300, 500));
-        filesPanel.setLocation(new Point(540,20));
+        filesPanel.setLocation(new Point(540,30));
         this.add(filesPanel);
 
 

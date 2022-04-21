@@ -10,14 +10,16 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 import client.network.Client;
-import client.view.files.FilesTablePanel;
+import client.view.files.ServerFilesTablePanel;
+import client.view.files.SharedFilesTablePanel;
 import client.view.users.UsersTablePanel;
 
 @SuppressWarnings("serial")
 public class ClientWindow extends JFrame {
 
     private UsersTablePanel usersPanel;
-    private FilesTablePanel filesPanel;
+    private ServerFilesTablePanel serverFilesPanel;
+    private SharedFilesTablePanel sharedFilesPanel;
 
     private Client client;
 
@@ -30,7 +32,7 @@ public class ClientWindow extends JFrame {
     	
     	this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.setTitle(String.format("Client %d", client.getId()));
-        this.setPreferredSize(new Dimension(760, 320));
+        this.setPreferredSize(new Dimension(540, 580));
         this.setLocation(25, 50);
         this.setBackground(Color.WHITE);
         this.setLayout(null);
@@ -42,15 +44,21 @@ public class ClientWindow extends JFrame {
         this.add(usersPanel);
         
 
-        //Files Panel
-        filesPanel = new FilesTablePanel(client);
-        filesPanel.setSize(new Dimension(200, 250));
-        filesPanel.setLocation(new Point(540,20));
-        this.add(filesPanel);
+        //Server Files Panel
+        serverFilesPanel = new ServerFilesTablePanel(client);
+        serverFilesPanel.setSize(new Dimension(240, 250));
+        serverFilesPanel.setLocation(new Point(20,280));
+        this.add(serverFilesPanel);
+        
+        //Shared Files Panel
+        sharedFilesPanel = new SharedFilesTablePanel(client);
+        sharedFilesPanel.setSize(new Dimension(240, 250));
+        sharedFilesPanel.setLocation(new Point(280,280));
+        this.add(sharedFilesPanel);
 
 
         this.setResizable(false);
-        this.setSize(760, 320);
+        this.setSize(540, 580);
 
         this.pack();
         this.setVisible(true);

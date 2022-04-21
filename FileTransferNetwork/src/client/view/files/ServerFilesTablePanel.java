@@ -18,7 +18,7 @@ import javax.swing.event.ListSelectionListener;
 import client.network.Client;
 
 
-public class FilesTablePanel extends JPanel implements ActionListener {
+public class ServerFilesTablePanel extends JPanel implements ActionListener {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -29,7 +29,7 @@ public class FilesTablePanel extends JPanel implements ActionListener {
 	
 	private JButton downloadButton;
 
-	public FilesTablePanel(Client client) {
+	public ServerFilesTablePanel(Client client) {
 		this.client = client;
 		init();
 	}
@@ -67,6 +67,11 @@ public class FilesTablePanel extends JPanel implements ActionListener {
 		downloadButton = new JButton("Download");
 		downloadButton.setEnabled(false);
 		downloadButton.setPreferredSize(new Dimension(50, 20));
+		downloadButton.setForeground(Color.white);
+		downloadButton.setBackground(Color.blue);
+		downloadButton.setOpaque(true);
+		downloadButton.setBorderPainted(false);
+		downloadButton.setEnabled(false);
 		downloadButton.addActionListener(this);
 		this.add(downloadButton, BorderLayout.PAGE_END);
 		
@@ -80,7 +85,6 @@ public class FilesTablePanel extends JPanel implements ActionListener {
 			int row = table.getSelectedRow();
 			client.requestFile((String)filesTableModel.getValueAt(row, 0));
 			System.out.println(String.format("Requests file %s", (String)filesTableModel.getValueAt(row, 0)));
-			downloadButton.setEnabled(false);
 		}
 	}
 }
