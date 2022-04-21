@@ -6,6 +6,8 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.locks.ReentrantLock;
 
 import javax.swing.JOptionPane;
@@ -29,7 +31,13 @@ public class Server implements Observable<Server> {
 	
 	private ServerSocket socket;
 	
-	ReentrantLock lock = new ReentrantLock();
+	private boolean active;
+	
+	private ReentrantLock activeLock = new ReentrantLock();
+	private ReentrantLock userIdsLock = new ReentrantLock();
+	private ReentrantLock connectionsLock = new ReentrantLock();
+	
+	private CyclicBarrier closeBarrier;
 	
 	private List<ClientListener> connections;
 	private int nUsers;
@@ -37,6 +45,7 @@ public class Server implements Observable<Server> {
 	private List<Observer<Server>> observers;
 	
 	public Server() throws IOException {
+		active = true;
 		socket = new ServerSocket(0);
 		ip = socket.getInetAddress().getHostAddress();
 		port = socket.getLocalPort();
@@ -53,6 +62,10 @@ public class Server implements Observable<Server> {
 	 * Getters and setters
 	 */
 	
+	public boolean isActive() {
+		return active;
+	}
+	
 	public String getIp() {
 		return ip;
 	}
@@ -65,6 +78,10 @@ public class Server implements Observable<Server> {
 		return clientsTable.getUsers();
 	}
 	
+	public User getUser(int id) {
+		return clientsTable.getUser(id);
+	}
+	
 	public User getSender(String file) {
 		return filesTable.getSender(file);
 	}
@@ -73,28 +90,47 @@ public class Server implements Observable<Server> {
 		return filesTable.getFiles();
 	}
 	
+	public CyclicBarrier getCloseBarrier() {
+		return closeBarrier;
+	}
+	
+	
 	/*
-	 * Manage users
+	 * User management methods
 	 */
+	
+	/* public void removeUser(User u)
+	 * 
+	 * Removes the user and its files from the registers.
+	 **/
 	
 	public void removeUser(User u) {
 		clientsTable.removeUser(u);
 		filesTable.removeUserFiles(u);
 		
-		for (Observer<Server> o: observers) {
-			o.update(this);
-		}
+		notifyUpdate();
 	}
 	
+	/* public void addUser(User u)
+	 * 
+	 * First, assigns an identifier to the user.
+	 * Then, ads the user and its files to the register and notifies the observers.
+	 **/
+	
 	public void addUser(User u) {
-		lock.lock();
+		userIdsLock.lock();
 		u.setId(++nUsers);
-		lock.unlock();
+		userIdsLock.unlock();
 		clientsTable.addUser(u);
 		filesTable.addUserFiles(u);
 		
 		notifyUpdate();
 	}
+	
+	/* public void updateUser(int id, Set<String> files)
+	 * 
+	 * Updates the user files and notifies the observers.
+	 **/
 	
 	public void updateUser(int id, Set<String> files) {
 		User u = clientsTable.getUser(id);
@@ -105,26 +141,79 @@ public class Server implements Observable<Server> {
 		notifyUpdate();
 	}
 	
-	public User getUser(int id) {
-		return clientsTable.getUser(id);
-	}
-	
 	
 	/* 
-	 * Manage session
+	 * Connection management methods
 	 */
 	
+	/* public void endSession()
+	 * 
+	 * Ends the session with all the active clients
+	 * 
+	 * First, updates the server status to inactive to avoid new clients to connect.
+	 * Second, creates a barrier to synchronize the clients disconnection.
+	 * Third, starts to send terminate the connections.
+	 * Finally, waits to all the client listeners to end their sessions.
+	 **/
+	
 	public void endSession() throws Exception {
+		activeLock.lock();
+		active = false;
+		activeLock.unlock();
+		
+		closeBarrier = new CyclicBarrier(connections.size() + 1);
 		for (ClientListener l: connections) {
 			if (l.isActive())
 				l.endConnection();
 		}
 		socket.close();
+		closeBarrier.await();
 	}
 	
-	public void removeConnection(ClientListener c) {
+	
+	/* public void addConnection(Socket s)
+	 * 
+	 * Registers a new client listener
+	 * 
+	 * First, checks the server status.
+	 * If it is active, creates a Client listener for the new user and registers it as an observer of the server.
+	 * If not, closes the socket with the new user.
+	 **/
+	
+	public void addConnection(Socket s) throws IOException {
+		activeLock.lock();
+		if (active) {
+			connectionsLock.lock();
+			ClientListener c = new ClientListener(this, s);
+			c.start();
+			connections.add(c);
+			addObserver(c);
+			connectionsLock.unlock();
+		} else {
+			s.close();
+		}
+		activeLock.unlock();
+	}
+	
+	
+	/* public void removeConnection(ClientListener c)
+	 * 
+	 * Removes a client listener
+	 * 
+	 * First, checks the server status and removes the listener.
+	 * If it is not active, it waits all the clients to disconnect.
+	 **/
+	
+	public void removeConnection(ClientListener c) throws InterruptedException, BrokenBarrierException {
+		activeLock.lock();
+		boolean active = isActive();
+		connectionsLock.lock();
 		connections.remove(c);
-		removeObserver(c);
+		connectionsLock.unlock();
+		activeLock.unlock();
+		
+		if (!active)
+			closeBarrier.await();
 	}
 	
 	
@@ -133,16 +222,16 @@ public class Server implements Observable<Server> {
 	 */
 	
 	@Override
-	public void addObserver(Observer<Server> o) {
+	public synchronized void addObserver(Observer<Server> o) {
 		observers.add(o);
 	}
 	
 	@Override
-	public void removeObserver(Observer<Server> o) {
+	public synchronized void removeObserver(Observer<Server> o) {
 		observers.remove(o);
 	}
 	
-	public void notifyUpdate() {
+	public synchronized void notifyUpdate() {
 		for (Observer<Server> o: observers) {
 			o.update(this);
 		}
@@ -150,8 +239,10 @@ public class Server implements Observable<Server> {
 	
 	
 	/*
-	 *  Main method
-	 */
+	 * Main method
+	 * 
+	 * Creates the server, its GUI and waits for new connections.
+	 **/
 	
 	public static void main(String arg[]) {
 		try {
@@ -168,16 +259,13 @@ public class Server implements Observable<Server> {
 				System.err.println(e.getMessage());
 			}
 			
-			while(true) {
+			while(server.isActive()) {
 				Socket s = server.socket.accept();
-				ClientListener c = new ClientListener(server, s);
-				server.connections.add(c);
-				server.addObserver(c);
-				c.start();
+				server.addConnection(s);
 			}
 			
 		} catch (Exception e) {
-			JOptionPane.showMessageDialog(null, e.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);	
+			JOptionPane.showMessageDialog(null, e.getMessage(), "SERVER ERROR", JOptionPane.ERROR_MESSAGE);	
 			e.printStackTrace();
 		}
 	}

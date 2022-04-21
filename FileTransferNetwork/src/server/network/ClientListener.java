@@ -97,12 +97,12 @@ public class ClientListener extends Thread implements Observer<Server> {
 						break;
 						
 					case CONFIRM_TERMINATE:
+						server.removeObserver(this);
+						server.removeUser(user);
+						
 						out.close();
 						in.close();
 						socket.close();
-						
-						server.removeConnection(this);
-						server.removeUser(user);
 						
 						System.out.println(String.format("Client %d disconnects from server", user.getId()));
 						
@@ -112,6 +112,7 @@ public class ClientListener extends Thread implements Observer<Server> {
 					case FILE_REQUEST:
 						String file = ((FileRequestMessage)m).getFile();
 						System.out.println(String.format("Client %d requests file %s", user.getId(), file));
+						
 						User sender = server.getSender(file);
 						sender.getOut().writeObject(new SendRequestMessage(server.getIp(), sender.getIp(), user, file));
 						sender.getOut().flush();
@@ -121,11 +122,10 @@ public class ClientListener extends Thread implements Observer<Server> {
 						out.writeObject(new ConfirmTerminateMessage(server.getIp(), user.getIp()));
 						out.flush();
 						
-						server.removeConnection(this);
+						server.removeObserver(this);
 						server.removeUser(user);
 						
 						System.out.println(String.format("Client %d disconnects from server", user.getId()));
-						
 						active = false;
 						break;
 						
@@ -152,7 +152,9 @@ public class ClientListener extends Thread implements Observer<Server> {
 					endConnection();
 				}
 			}
-			server.removeObserver(this);
+			
+			server.removeConnection(this);
+			
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(null, e.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();

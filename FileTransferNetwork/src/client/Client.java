@@ -77,7 +77,7 @@ public class Client implements Observable<Client> {
 	
 	/*
 	 * Getters and setters
-	 * */
+	 */
 	
 	public int getId() {
 		return id;
@@ -174,7 +174,6 @@ public class Client implements Observable<Client> {
 	 * 
 	 * Método encargado de actualizar los datos que el cliente almacena sobre el estado del servidor.
 	 * Además, notificará a sus observadores de que se han realizado cambios.
-	 * 
 	 * */
 	
 	public void updateServerInfo(List<User> users, Set<String> files) {
@@ -184,11 +183,9 @@ public class Client implements Observable<Client> {
 	}
 	
 	
-	/* public void addObserver(Observer<Client> o)
-	 * 
-	 * Método encargado de registrar a los observadores del cliente.
-	 * 
-	 * */
+	/*
+	 * Observable methods
+	 */
 	
 	@Override
 	public void addObserver(Observer<Client> o) {
@@ -212,7 +209,6 @@ public class Client implements Observable<Client> {
 	 * La respuesta del servidor incluirá la lista de usuarios conectados y los archivos disponibles.
 	 * 
 	 * Devolverá true en caso de que la conexión sea satisfactoria y false en caso contrario.
-	 * 
 	 * */
 	
 	private boolean startConnection() {
@@ -250,6 +246,7 @@ public class Client implements Observable<Client> {
 		return true;
 	}
 	
+	
 	public void sendUserData() {
 		try {
 			out.writeObject(new UserUpdateMessage(ip, serverIp, id, getSharedFiles()));
@@ -263,11 +260,9 @@ public class Client implements Observable<Client> {
 	
 	/* public void endConnection()
 	 * 
-	 * Método encargado de iniciar la cerrar con el servidor
-	 * 
-	 * En primer lugar enviará un mensaje de solicitud de desconexión y esperará a la confirmación del servidor.
-	 * Una vez recibida la confirmació de desconexion, se encargará de cerrar los canales y el socket correspondientes.
-	 * 
+	 * Ends the connection with the server.
+	 * Sends a terminate connection message. 
+	 * The confirmation message will be received by the server listener.
 	 * */
 	
 	public void endConnection() {
@@ -285,8 +280,7 @@ public class Client implements Observable<Client> {
 	
 	/* public void requestFile(String file)
 	 * 
-	 * Método encargado de solicitar un archivo al servidor
-	 * 
+	 * Request a file to the server.
 	 * */
 	
 	public void requestFile(String file) {
@@ -299,9 +293,11 @@ public class Client implements Observable<Client> {
 	}
 	
 	
-	/* 
-	 * Main methods of Client
-	 */
+	/*
+	 * Main method
+	 * 
+	 * Creates the client, starts the connection and its GUI.
+	 **/
 	
 	public static void main(String args[]) {
 		Client client;
