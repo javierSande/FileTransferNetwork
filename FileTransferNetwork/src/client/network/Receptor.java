@@ -28,7 +28,8 @@ public class Receptor extends Thread {
 	}
 	
 	public void saveFile() throws Exception {  
-		File f = new File(String.format("%s%s", client.getDir(), file));
+		File dir = new File(client.getDir());
+		File f = new File(dir, file);
 		f.createNewFile();
 
 		RandomAccessFile fw = new RandomAccessFile(f, "rw"); 
@@ -39,7 +40,6 @@ public class Receptor extends Thread {
 			byte[] b = ((DataMessage) m).getData();
 			int size = ((DataMessage) m).getSize();
 			fw.write (b, 0, size);
-			System.out.println(b.toString());
 			m = (Message) in.readObject();
 		}
 		

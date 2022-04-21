@@ -75,9 +75,9 @@ public class Client implements Observable<Client> {
 		return id;
 	}
 	
-	public void setDir(String dir) {
-		clientDir = dir;
-		File f = new File(dir); 
+	public void initDir() {
+		clientDir = String.format("Client%d", id);
+		File f = new File(clientDir); 
 		f.mkdir();
 	}
 	
@@ -261,7 +261,7 @@ public class Client implements Observable<Client> {
 				client = new Client(name, ip, port, files);
 			} while(!client.startConnection());
 			
-			client.setDir(String.format("Client%d%s", client.id, File.pathSeparator));
+			client.initDir();
 			
 			Client myClient = client;
 			myClient.listener = new ServerListener(client);
