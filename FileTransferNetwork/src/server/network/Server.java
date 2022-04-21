@@ -48,7 +48,10 @@ public class Server implements Observable<Server> {
 		observers = new ArrayList<Observer<Server>>();
 	}
 	
-	//Getters and setters
+	/*
+	 * Getters and setters
+	 */
+	
 	public String getIp() {
 		return ip;
 	}
@@ -69,7 +72,10 @@ public class Server implements Observable<Server> {
 		return filesTable.getFiles();
 	}
 	
-	//Manage users
+	/*
+	 * Manage users
+	 */
+	
 	public void removeUser(User u) {
 		clientsTable.removeUser(u);
 		filesTable.removeUserFiles(u);
@@ -86,16 +92,27 @@ public class Server implements Observable<Server> {
 		clientsTable.addUser(u);
 		filesTable.addUserFiles(u);
 		
-		for (Observer<Server> o: observers) {
-			o.update(this);
-		}
+		notifyUpdate();
+	}
+	
+	public void updateUser(int id, Set<String> files) {
+		User u = clientsTable.getUser(id);
+		filesTable.removeUserFiles(u);
+		u.setSharedData(files);
+		filesTable.addUserFiles(u);
+		
+		notifyUpdate();
 	}
 	
 	public User getUser(int id) {
 		return clientsTable.getUser(id);
 	}
 	
-	//Manage session
+	
+	/* 
+	 * Manage session
+	 */
+	
 	public void endSession() throws Exception {
 		for (ClientListener l: connections) {
 			if (l.isActive())
@@ -109,7 +126,11 @@ public class Server implements Observable<Server> {
 		removeObserver(c);
 	}
 	
-	//Observable methods
+	
+	/*
+	 * Observable methods
+	 */
+	
 	@Override
 	public void addObserver(Observer<Server> o) {
 		observers.add(o);
@@ -120,7 +141,17 @@ public class Server implements Observable<Server> {
 		observers.remove(o);
 	}
 	
-	// Main method
+	public void notifyUpdate() {
+		for (Observer<Server> o: observers) {
+			o.update(this);
+		}
+	}
+	
+	
+	/*
+	 *  Main method
+	 */
+	
 	public static void main(String arg[]) {
 		try {
 			Server server = new Server();

@@ -68,6 +68,11 @@ public class User implements Serializable {
 	public Set<String> getSharedData() {
 		return sharedData;
 	}
+	
+	public void setSharedData(Set<String> files) {
+		sharedData = files;
+		
+	}
 
 	// Add data to share
 	public void shareData(String filepath) {

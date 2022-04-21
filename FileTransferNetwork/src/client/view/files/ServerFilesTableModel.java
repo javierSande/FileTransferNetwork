@@ -9,12 +9,12 @@ import client.network.Client;
 import server.view.Observer;
 
 @SuppressWarnings("serial")
-public class FilesTableModel extends AbstractTableModel implements Observer<Client> {
+public class ServerFilesTableModel extends AbstractTableModel implements Observer<Client> {
 
 	private List<String> files;
 	private final String[] columnNames = { "Name" };
 	
-	public FilesTableModel() {
+	public ServerFilesTableModel() {
 		files = new ArrayList<String>();
 	}
 	
@@ -40,7 +40,7 @@ public class FilesTableModel extends AbstractTableModel implements Observer<Clie
 	
 	@Override
 	public void update(Client c) {
-		files = c.getFilesList();
+		files = c.getFiles();
 		fireTableStructureChanged();
 	}
 

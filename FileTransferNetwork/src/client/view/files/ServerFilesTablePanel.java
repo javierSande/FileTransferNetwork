@@ -24,7 +24,7 @@ public class ServerFilesTablePanel extends JPanel implements ActionListener {
 	
 	private Client client;
 	
-	private FilesTableModel filesTableModel;
+	private ServerFilesTableModel filesTableModel;
 	private JTable table;
 	
 	private JButton downloadButton;
@@ -39,7 +39,7 @@ public class ServerFilesTablePanel extends JPanel implements ActionListener {
 		
 		setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black, 2), "Files available",
 				TitledBorder.LEFT, TitledBorder.TOP));
-		filesTableModel = new FilesTableModel();
+		filesTableModel = new ServerFilesTableModel();
 		client.addObserver(filesTableModel);
 
 		table = new JTable(filesTableModel);

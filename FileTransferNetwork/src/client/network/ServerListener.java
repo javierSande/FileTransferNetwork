@@ -11,7 +11,7 @@ import common.exceptions.DisconnectionException;
 import common.exceptions.MessageException;
 import common.messages.*;
 
-public class ServerListener extends Thread {
+public class ServerListener extends Thread{
 	
 	
 	private Client client;
@@ -39,11 +39,6 @@ public class ServerListener extends Thread {
 				try {
 					Message m = (Message) in.readObject();
 					switch(m.type) {
-					case CONFIRM_USER_LIST:
-						ConfirmUserListMessage um = (ConfirmUserListMessage) m;
-						client.updateServerInfo(um.getUserList(), um.getFileList());
-						break;
-						
 					case SEND_REQUEST:
 						SendRequestMessage srm = (SendRequestMessage) m;
 						System.out.println(String.format("Client %d requested file %s", srm.getReceiver().getId(), srm.getFile()));
@@ -58,6 +53,11 @@ public class ServerListener extends Thread {
 						ServerClientReadyMessage sm = (ServerClientReadyMessage) m;
 						Receptor r = new Receptor(client, sm.getIp(), sm.getPort(), sm.getFile());
 						r.start();
+						break;
+						
+					case SERVER_UPDATE:
+						ServerUpdateMessage sum = (ServerUpdateMessage) m;
+						client.updateServerInfo(sum.getUserList(), sum.getFileList());
 						break;
 						
 					case TERMINATE:

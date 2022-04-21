@@ -55,18 +55,25 @@ public class Emisor extends Thread {
 
 	@Override
 	public void run() {	
-		System.out.println(String.format("Start transmission of %s", file));
 		try {
+			client.getSemaphore().acquire();
+			
+			System.out.println(String.format("Start transmission of %s", file));
+			
 			Socket s = socket.accept();
 			out = new ObjectOutputStream(s.getOutputStream());
 			receiverIp = s.getInetAddress().getHostAddress();
 			
 			sendFile();
 			
+			System.out.println(String.format("End transmission of %s", file));
+			
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(null, e.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
+			System.out.println(String.format("Filed to send %s", file));
 			e.printStackTrace();
+		} finally {
+			client.getSemaphore().release();
 		}
-		System.out.println(String.format("End transmission of %s", file));
 	}
 }

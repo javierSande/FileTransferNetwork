@@ -11,6 +11,8 @@ public enum MessageType {
 	TERMINATE, CONFIRM_TERMINATE,
 	ERROR,
 	DATA,
+	USER_UPDATE,
+	SERVER_UPDATE,
 	EOF
 
 }

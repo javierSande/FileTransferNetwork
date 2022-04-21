@@ -6,23 +6,26 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Semaphore;
 
 import javax.swing.JOptionPane;
 
 import client.data.FilesTable;
 import client.data.UsersList;
 import client.view.ClientWindow;
-import client.view.FileSelector;
 import common.User;
 import common.messages.*;
 import server.view.Observable;
 import server.view.Observer;
 
 public class Client implements Observable<Client> {
+	
+	public static final int MAX_TRANSMISSIONS = 1;
 	
 	private int id;
 	private String name;
@@ -43,20 +46,24 @@ public class Client implements Observable<Client> {
 	private ObjectInputStream in;
 	
 	private ServerListener listener;
+	
+	private Semaphore transmissionSempaphore;
 
-	public Client(String name, String serverIp, int port, Map<String, String> filesToShare) throws IOException {
+	public Client(String name, String serverIp, int port) throws IOException {
 		super();
 		this.name = name;
 		this.serverIp = serverIp;
 		this.port = port;
 		
-		this.filesToShare = filesToShare;
+		this.filesToShare = new HashMap<String,String>();
 		
 		this.socket = new Socket(serverIp, port);
 		
 		this.usersOnServer = new UsersList();
 		this.filesOnServer = new FilesTable();
 		this.observers = new ArrayList<Observer<Client>>();
+		
+		transmissionSempaphore = new Semaphore(MAX_TRANSMISSIONS);
 		
 		System.out.println(String.format("ServerIP: %s", serverIp));
 		System.out.println(String.format("ServerPort: %d", port));
@@ -109,40 +116,56 @@ public class Client implements Observable<Client> {
 		return in;
 	}
 	
-	public String getFilePath(String file) {
-		return filesToShare.get(file);
+	private void setListener(ServerListener serverListener) {
+		listener = serverListener;
 	}
+	
+	public Semaphore getSemaphore() {
+		return transmissionSempaphore;
+	}
+	
 	
 	public List<User> getUserList() {
 		return usersOnServer.getUsers();
 	}
 	
-	public List<String> getSharedFiles() {
-		return new ArrayList<String>(filesToShare.keySet());
+	
+	/*
+	 * Manage shared files methods
+	 */
+	
+	public String getFilePath(String file) {
+		return filesToShare.get(file);
+	}
+	
+	public Set<String> getSharedFiles() {
+		return new HashSet<String>(filesToShare.keySet());
 	}
 	
 	public void addSharedFiles(Map<String, String> files) {
 		filesToShare.putAll(files);
+		sendUserData();
 		notifyChange();
 	}
 	
 	public void deleteSharedFiles(List<String> file) {
 		for (String f: file)
 			deleteSharedFile(f);
+		sendUserData();
+		notifyChange();
 	}
 	
 	public void deleteSharedFile(String file) {
 		filesToShare.remove(file);
-		notifyChange();
 	}
 	
-	public List<String> getFilesList() {
-		List<String> list = new ArrayList<String>();
+	public List<String> getFiles() {
+		List<String> files = new ArrayList<String>();
 		for (String f: filesOnServer.getFiles()) {
 			if (!filesToShare.containsKey(f))
-				list.add(f);
+				files.add(f);
 		}
-		return list;
+		return files;
 	}
 	
 	
@@ -225,6 +248,16 @@ public class Client implements Observable<Client> {
 		System.out.println("Connected to server!");
 		return true;
 	}
+	
+	public void sendUserData() {
+		try {
+			out.writeObject(new UserUpdateMessage(ip, serverIp, id, getSharedFiles()));
+			out.flush();
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(null, e.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
+			e.printStackTrace();
+		}
+	}
 
 	
 	/* public void endConnection()
@@ -278,16 +311,13 @@ public class Client implements Observable<Client> {
 				int port = Integer.parseInt(JOptionPane.showInputDialog("Input the server Port: "));
 				String name = JOptionPane.showInputDialog("Input your username: ");
 				
-				Map<String, String> files = (new FileSelector()).selectFiles();
-		        
-				
-				client = new Client(name, ip, port, files);
+				client = new Client(name, ip, port);
 			} while(!client.startConnection());
 			
 			client.initDir();
 			
 			Client myClient = client;
-			myClient.listener = new ServerListener(client);
+			myClient.setListener(new ServerListener(client));
 			myClient.listener.start();
 			
 			new ClientWindow(myClient);

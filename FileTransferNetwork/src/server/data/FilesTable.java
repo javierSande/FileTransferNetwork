@@ -35,9 +35,11 @@ public class FilesTable {
 	
 	public synchronized void removeUserFiles(User u) {
 		for (String f: u.getSharedData()) {
-			fileMap.get(f).remove(u);
-			if (fileMap.get(f).isEmpty())
-				fileMap.remove(f);
+			if (fileMap.containsKey(f)) {
+				fileMap.get(f).remove(u);
+				if (fileMap.get(f).isEmpty())
+					fileMap.remove(f);
+			}
 		}
 	}
 }

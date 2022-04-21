@@ -68,7 +68,7 @@ public class ClientListener extends Thread implements Observer<Server> {
 	@Override
 	public void update(Server s) {
 		try {
-			out.writeObject(new ConfirmUserListMessage(server.getIp(), user.getIp(), server.getUsers(), server.getFiles()));
+			out.writeObject(new ServerUpdateMessage(server.getIp(), user.getIp(), server.getUsers(), server.getFiles()));
 			out.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -95,6 +95,19 @@ public class ClientListener extends Thread implements Observer<Server> {
 						out.flush();
 						break;
 						
+					case CONFIRM_TERMINATE:
+						out.close();
+						in.close();
+						socket.close();
+						
+						server.removeConnection(this);
+						server.removeUser(user);
+						
+						System.out.println(String.format("Client %d disconnects from server", user.getId()));
+						
+						active = false;
+						break;
+						
 					case FILE_REQUEST:
 						String file = ((FileRequestMessage)m).getFile();
 						System.out.println(String.format("Client %d requests file %s", user.getId(), file));
@@ -115,22 +128,14 @@ public class ClientListener extends Thread implements Observer<Server> {
 						active = false;
 						break;
 						
-					case CONFIRM_TERMINATE:
-						out.close();
-						in.close();
-						socket.close();
-						
-						server.removeConnection(this);
-						server.removeUser(user);
-						
-						System.out.println(String.format("Client %d disconnects from server", user.getId()));
-						
-						active = false;
-						break;
-						
 					case USER_LIST:
 						out.writeObject(new ConfirmUserListMessage(server.getIp(), user.getIp(), server.getUsers(), server.getFiles()));
 						out.flush();
+						break;
+					
+					case USER_UPDATE:
+						UserUpdateMessage um = (UserUpdateMessage) m;
+						server.updateUser(um.getId(), um.getDataToShare());
 						break;
 						
 					case ERROR:
@@ -146,7 +151,7 @@ public class ClientListener extends Thread implements Observer<Server> {
 					endConnection();
 				}
 			}
-			
+			server.removeObserver(this);
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(null, e.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
