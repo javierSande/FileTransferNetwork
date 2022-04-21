@@ -7,6 +7,7 @@ import java.net.Socket;
 
 import javax.swing.JOptionPane;
 
+import client.Client;
 import common.exceptions.DisconnectionException;
 import common.exceptions.MessageException;
 import common.messages.*;

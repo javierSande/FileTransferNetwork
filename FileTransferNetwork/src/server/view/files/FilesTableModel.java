@@ -5,7 +5,7 @@ import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
 
-import server.network.Server;
+import server.Server;
 import server.view.Observer;
 
 @SuppressWarnings("serial")

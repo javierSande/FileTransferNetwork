@@ -9,7 +9,7 @@ import java.awt.event.WindowEvent;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
-import client.network.Client;
+import client.Client;
 import client.view.files.ServerFilesTablePanel;
 import client.view.files.SharedFilesTablePanel;
 import client.view.users.UsersTablePanel;

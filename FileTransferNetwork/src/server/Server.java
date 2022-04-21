@@ -1,4 +1,4 @@
-package server.network;
+package server;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -15,6 +15,7 @@ import common.User;
 import server.view.Observable;
 import server.data.ClientsTable;
 import server.data.FilesTable;
+import server.network.ClientListener;
 import server.view.Observer;
 import server.view.ServerWindow;
 

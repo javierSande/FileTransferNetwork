@@ -15,7 +15,7 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import client.network.Client;
+import client.Client;
 
 
 public class ServerFilesTablePanel extends JPanel implements ActionListener {

@@ -8,6 +8,7 @@ import java.net.Socket;
 
 import javax.swing.JOptionPane;
 
+import client.Client;
 import common.messages.DataMessage;
 import common.messages.Message;
 import common.messages.MessageType;

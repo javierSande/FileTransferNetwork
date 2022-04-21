@@ -10,6 +10,7 @@ import java.net.Socket;
 
 import javax.swing.JOptionPane;
 
+import client.Client;
 import common.messages.*;
 
 public class Emisor extends Thread {

@@ -10,6 +10,7 @@ import javax.swing.JOptionPane;
 import common.User;
 import common.exceptions.MessageException;
 import common.messages.*;
+import server.Server;
 import server.view.Observer;
 
 public class ClientListener extends Thread implements Observer<Server> {

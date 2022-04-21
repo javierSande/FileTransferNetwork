@@ -1,4 +1,4 @@
-package client.network;
+package client;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,6 +17,7 @@ import javax.swing.JOptionPane;
 
 import client.data.FilesTable;
 import client.data.UsersList;
+import client.network.ServerListener;
 import client.view.ClientWindow;
 import common.User;
 import common.messages.*;

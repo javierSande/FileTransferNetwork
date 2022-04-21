@@ -13,9 +13,9 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+import server.Server;
 import server.view.files.*;
 import server.view.users.UsersTablePanel;
-import server.network.Server;
 
 @SuppressWarnings("serial")
 public class ServerWindow extends JFrame {

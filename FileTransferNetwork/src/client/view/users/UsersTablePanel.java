@@ -10,7 +10,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.border.TitledBorder;
 
-import client.network.Client;
+import client.Client;
 
 
 public class UsersTablePanel extends JPanel {

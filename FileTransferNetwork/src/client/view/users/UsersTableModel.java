@@ -5,7 +5,7 @@ import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
 
-import client.network.Client;
+import client.Client;
 import common.User;
 import server.view.Observer;
 
