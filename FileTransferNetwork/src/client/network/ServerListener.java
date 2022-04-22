@@ -8,6 +8,7 @@ import java.net.Socket;
 import javax.swing.JOptionPane;
 
 import client.Client;
+import common.console.Console;
 import common.exceptions.DisconnectionException;
 import common.exceptions.MessageException;
 import common.messages.*;
@@ -34,15 +35,13 @@ public class ServerListener extends Thread{
 	@Override
 	public void run() {	
 		try {
-			System.out.println("Client listenning to the server");
-			
 			while (active) {
 				try {
 					Message m = (Message) in.readObject();
 					switch(m.type) {
 					case SEND_REQUEST:
 						SendRequestMessage srm = (SendRequestMessage) m;
-						System.out.println(String.format("Client %d requested file %s", srm.getReceiver().getId(), srm.getFile()));
+						Console.print(String.format("Client %d requested file %s", srm.getReceiver().getId(), srm.getFile()));
 						
 						Emisor e = new Emisor(client, srm.getFile());
 						e.start();
@@ -64,13 +63,14 @@ public class ServerListener extends Thread{
 					case TERMINATE:
 						out.writeObject(new ConfirmTerminateMessage(client.getIp(), client.getServerIp()));
 						out.flush();
+						Console.print("Disconnected from server!");
 						throw new DisconnectionException("Server disconnected!");
 						
 					case CONFIRM_TERMINATE:
 						out.close();
 						in.close();
 						socket.close();
-						System.out.println("Disconnected to server!");
+						Console.print("Disconnected from server!");
 						active = false;
 						break;
 						

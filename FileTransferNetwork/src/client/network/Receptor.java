@@ -9,6 +9,7 @@ import java.net.Socket;
 import javax.swing.JOptionPane;
 
 import client.Client;
+import common.console.Console;
 import common.messages.DataMessage;
 import common.messages.Message;
 import common.messages.MessageType;
@@ -47,7 +48,7 @@ public class Receptor extends Thread {
 		fw.close();
 		
 		if (m.type == MessageType.EOF)
-			System.out.println(String.format("End transmission of %s", file));
+			Console.print(String.format("End transmission of %s", file));
 		else
 			throw new Exception("Failed to transfer file");
 		
@@ -58,7 +59,7 @@ public class Receptor extends Thread {
 	@Override
 	public void run() {	
 		
-		System.out.println(String.format("Start transmission of %s", file));
+		Console.print(String.format("Start transmission of %s", file));
 		try {
 			in = new ObjectInputStream(socket.getInputStream());
 			saveFile();

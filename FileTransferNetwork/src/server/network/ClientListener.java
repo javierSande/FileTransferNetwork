@@ -8,6 +8,7 @@ import java.net.Socket;
 import javax.swing.JOptionPane;
 
 import common.User;
+import common.console.Console;
 import common.exceptions.MessageException;
 import common.messages.*;
 import server.Server;
@@ -61,7 +62,7 @@ public class ClientListener extends Thread implements Observer<Server> {
 			out.flush();
 			
 		} catch (Exception e) {
-			System.out.println("Failed to disconnect from server!");
+			Console.print("Failed to disconnect from server!");
 			e.printStackTrace();
 		}
 	}
@@ -79,11 +80,11 @@ public class ClientListener extends Thread implements Observer<Server> {
 	@Override
 	public void run() {	
 		try {
-			System.out.println("Client requests connection");
+			Console.print("Client requests connection");
 			
 			active = startConnection();
 			
-			System.out.println(String.format("Client %d connects to server", user.getId()));
+			Console.print(String.format("Client %d connects to server", user.getId()));
 			
 			while (active) {
 				try {
@@ -104,14 +105,14 @@ public class ClientListener extends Thread implements Observer<Server> {
 						in.close();
 						socket.close();
 						
-						System.out.println(String.format("Client %d disconnects from server", user.getId()));
+						Console.print(String.format("Client %d disconnects from server", user.getId()));
 						
 						active = false;
 						break;
 						
 					case FILE_REQUEST:
 						String file = ((FileRequestMessage)m).getFile();
-						System.out.println(String.format("Client %d requests file %s", user.getId(), file));
+						Console.print(String.format("Client %d requests file %s", user.getId(), file));
 						
 						User sender = server.getSender(file);
 						sender.getOut().writeObject(new SendRequestMessage(server.getIp(), sender.getIp(), user, file));
@@ -125,7 +126,7 @@ public class ClientListener extends Thread implements Observer<Server> {
 						server.removeObserver(this);
 						server.removeUser(user);
 						
-						System.out.println(String.format("Client %d disconnects from server", user.getId()));
+						Console.print(String.format("Client %d disconnects from server", user.getId()));
 						active = false;
 						break;
 						
@@ -140,7 +141,7 @@ public class ClientListener extends Thread implements Observer<Server> {
 						break;
 						
 					case ERROR:
-						System.out.println(((ErrorMessage)m).getMessage());
+						Console.print(((ErrorMessage)m).getMessage());
 						break;
 						
 					default:

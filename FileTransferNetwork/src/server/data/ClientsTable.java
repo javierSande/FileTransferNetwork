@@ -10,7 +10,10 @@ import common.User;
 public class ClientsTable {
 	private Map<Integer, User> users;
 	
+	private int nReaders;
+	
 	public ClientsTable() {
+		nReaders = 0;
 		users = new HashMap<Integer, User>();
 	}
 	
@@ -21,17 +24,39 @@ public class ClientsTable {
 		return list;
 	}
 	
-	public synchronized User getUser(int id) {
-		return users.get(id);
+	private synchronized void startRead() {
+		nReaders++;
+	}
+	
+	private synchronized void endRead() {
+		nReaders--;
+		if (nReaders == 0)
+			notify();
+	}
+	
+	public User getUser(int id) {
+		startRead();
+		User u = users.get(id);
+		endRead();
+		return u;
 	}
 	
 	public synchronized void addUser(User user) {
+		if (nReaders > 0)
+			try {
+				wait();
+			} catch (InterruptedException e) { return; }
 		if (!users.containsKey(user.getId()))
 			users.put(user.getId(), user);
 	}
 	
 	public synchronized void removeUser(User user) {
+		if (nReaders > 0)
+			try {
+				wait();
+			} catch (InterruptedException e) { return; }
 		if (users.containsKey(user.getId()))
 			users.remove(user.getId());
+		notify();
 	}
 }

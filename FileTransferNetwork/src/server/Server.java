@@ -36,6 +36,7 @@ public class Server implements Observable<Server> {
 	private ReentrantLock activeLock = new ReentrantLock();
 	private ReentrantLock userIdsLock = new ReentrantLock();
 	private ReentrantLock connectionsLock = new ReentrantLock();
+	private ReentrantLock observersLock = new ReentrantLock();
 	
 	private CyclicBarrier closeBarrier;
 	
@@ -159,12 +160,11 @@ public class Server implements Observable<Server> {
 	public void endSession() throws Exception {
 		activeLock.lock();
 		active = false;
+		closeBarrier = new CyclicBarrier(connections.size() + 1);
 		activeLock.unlock();
 		
-		closeBarrier = new CyclicBarrier(connections.size() + 1);
 		for (ClientListener l: connections) {
-			if (l.isActive())
-				l.endConnection();
+			l.endConnection();
 		}
 		socket.close();
 		closeBarrier.await();
@@ -222,13 +222,17 @@ public class Server implements Observable<Server> {
 	 */
 	
 	@Override
-	public synchronized void addObserver(Observer<Server> o) {
+	public void addObserver(Observer<Server> o) {
+		observersLock.lock();
 		observers.add(o);
+		observersLock.unlock();
 	}
 	
 	@Override
-	public synchronized void removeObserver(Observer<Server> o) {
+	public void removeObserver(Observer<Server> o) {
+		observersLock.lock();
 		observers.remove(o);
+		observersLock.unlock();
 	}
 	
 	public synchronized void notifyUpdate() {

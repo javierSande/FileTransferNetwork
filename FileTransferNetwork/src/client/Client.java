@@ -20,6 +20,7 @@ import client.data.UsersList;
 import client.network.ServerListener;
 import client.view.ClientWindow;
 import common.User;
+import common.console.Console;
 import common.messages.*;
 import server.view.Observable;
 import server.view.Observer;
@@ -66,13 +67,8 @@ public class Client implements Observable<Client> {
 		
 		transmissionSempaphore = new Semaphore(MAX_TRANSMISSIONS);
 		
-		System.out.println(String.format("ServerIP: %s", serverIp));
-		System.out.println(String.format("ServerPort: %d", port));
-		
 		out = new ObjectOutputStream(socket.getOutputStream());
 		in = new ObjectInputStream(socket.getInputStream());
-	
-		System.out.println("Channels initialized");
 	}
 	
 	/*
@@ -119,6 +115,7 @@ public class Client implements Observable<Client> {
 	
 	private void setListener(ServerListener serverListener) {
 		listener = serverListener;
+		listener.start();
 	}
 	
 	public Semaphore getSemaphore() {
@@ -212,7 +209,7 @@ public class Client implements Observable<Client> {
 	 * */
 	
 	private boolean startConnection() {
-		System.out.println("Starting connection...");
+		Console.print("Starting connection...");
 		try {			
 			ip = socket.getLocalAddress().getHostAddress();
 			
@@ -220,8 +217,11 @@ public class Client implements Observable<Client> {
 			
 			Message m = (Message) in.readObject();
 			
-			while (m.type != MessageType.CONFIRM_CONNECTION) {
+			if (m.type != MessageType.CONFIRM_CONNECTION) {
 				m = (Message) in.readObject();
+			} else {
+				JOptionPane.showMessageDialog(null, "Incorrect response from server");
+				return false;
 			}
 			
 			ConfirmConnectionMessage cm = (ConfirmConnectionMessage) m;
@@ -242,7 +242,7 @@ public class Client implements Observable<Client> {
 			e.printStackTrace();
 			return false;
 		}
-		System.out.println("Connected to server!");
+		Console.print("Connected to server!");
 		return true;
 	}
 	
@@ -266,13 +266,13 @@ public class Client implements Observable<Client> {
 	 * */
 	
 	public void endConnection() {
-		System.out.println("Starting disconnection...");
+		Console.print("Starting disconnection...");
 		listener.interrupt();
 		try {
 			out.writeObject(new TerminateMessage(ip, serverIp));
 			out.flush();
 		} catch (Exception e) {
-			System.out.println("Failed to disconnect from server!");
+			Console.print("Failed to disconnect from server!");
 			e.printStackTrace();
 		}
 	}
@@ -300,22 +300,33 @@ public class Client implements Observable<Client> {
 	 **/
 	
 	public static void main(String args[]) {
-		Client client;
+		Client client = null;
+		String ip, name;
+		int port;
+		boolean connected = false;
 		
 		try {
 			do {
-				String ip = JOptionPane.showInputDialog("Input the server IP: ");
-				int port = Integer.parseInt(JOptionPane.showInputDialog("Input the server Port: "));
-				String name = JOptionPane.showInputDialog("Input your username: ");
-				
-				client = new Client(name, ip, port);
-			} while(!client.startConnection());
+				try {
+					ip = JOptionPane.showInputDialog("Input the server IP: ", "localhost");
+					if (ip == null) System.exit(0);
+					
+					port = Integer.parseInt(JOptionPane.showInputDialog("Input the server Port: "));
+					name = JOptionPane.showInputDialog("Input your username: ");
+					
+					client = new Client(name, ip, port);
+					connected = client.startConnection();
+				} catch (NumberFormatException e) {
+					JOptionPane.showMessageDialog(null, "Invalid data", "ERROR", JOptionPane.ERROR_MESSAGE);
+				} catch (Exception e) {
+					JOptionPane.showMessageDialog(null, "Connection rejected", "ERROR", JOptionPane.ERROR_MESSAGE);
+				}
+			} while(!connected);
 			
 			client.initDir();
 			
 			Client myClient = client;
 			myClient.setListener(new ServerListener(client));
-			myClient.listener.start();
 			
 			new ClientWindow(myClient);
 			

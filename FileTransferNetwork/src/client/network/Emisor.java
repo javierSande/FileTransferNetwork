@@ -11,6 +11,7 @@ import java.net.Socket;
 import javax.swing.JOptionPane;
 
 import client.Client;
+import common.console.Console;
 import common.messages.*;
 
 public class Emisor extends Thread {
@@ -59,7 +60,7 @@ public class Emisor extends Thread {
 		try {
 			client.getSemaphore().acquire();
 			
-			System.out.println(String.format("Start transmission of %s", file));
+			Console.print(String.format("Start transmission of %s", file));
 			
 			Socket s = socket.accept();
 			out = new ObjectOutputStream(s.getOutputStream());
@@ -67,11 +68,11 @@ public class Emisor extends Thread {
 			
 			sendFile();
 			
-			System.out.println(String.format("End transmission of %s", file));
+			Console.print(String.format("End transmission of %s", file));
 			
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(null, e.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
-			System.out.println(String.format("Filed to send %s", file));
+			Console.print(String.format("Filed to send %s", file));
 			e.printStackTrace();
 		} finally {
 			client.getSemaphore().release();
