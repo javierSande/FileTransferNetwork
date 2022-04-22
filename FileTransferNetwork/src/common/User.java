@@ -4,6 +4,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.Socket;
+import java.util.HashSet;
 import java.util.Set;
 
 public class User implements Serializable {
@@ -30,6 +31,15 @@ public class User implements Serializable {
 		this.in = in;
 		this.out = out;
 		this.sharedData = sharedData;	
+	}
+	
+	private User(int id, String name, String ip, int clientPort, int serverPort, Set<String> sharedData) {
+		this.id = id;
+		this.name = name;
+		this.ip = ip;
+		this.clientPort = serverPort;
+		this.serverPort = serverPort;
+		this.sharedData = new HashSet<String>(sharedData);	
 	}
 	
 	// Getters and setters
@@ -81,5 +91,9 @@ public class User implements Serializable {
 	
 	public String toString() {
 		return String.format("%d %s (%s:%d)", id, name, ip, serverPort);
+	}
+	
+	public User clone() {
+		return (new User(id, name, ip, clientPort, serverPort, sharedData));
 	}
 }

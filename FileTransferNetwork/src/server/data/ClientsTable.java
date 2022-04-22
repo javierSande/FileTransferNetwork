@@ -18,7 +18,7 @@ public class ClientsTable extends Monitor {
 	public synchronized List<User> getUsers() {
 		List<User> list = new ArrayList<User>();
 		for (User u: users.values()) 
-			list.add(u);
+			list.add(u.clone());
 		return list;
 	}
 	

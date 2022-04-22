@@ -158,9 +158,7 @@ public class Server implements Observable<Server> {
 		for (ClientListener l: connections)
 			l.endConnection();
 		
-		for (ClientListener l: connections)
-			l.join();
-		
+		while(!connections.isEmpty());
 		socket.close();
 	}
 	

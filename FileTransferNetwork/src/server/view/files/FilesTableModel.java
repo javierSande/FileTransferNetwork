@@ -41,7 +41,7 @@ public class FilesTableModel extends AbstractTableModel implements Observer<Serv
 	@Override
 	public synchronized void update(Server s) {
 		files.clear();
-		files.addAll(files);
+		files.addAll(s.getFiles());
 		fireTableStructureChanged();
 	}
 
