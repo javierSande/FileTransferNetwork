@@ -71,14 +71,12 @@ public class ServerListener extends Thread{
 					case TERMINATE:
 						out.writeObject(new ConfirmTerminateMessage(client.getIp(), client.getServerIp()));
 						out.flush();
-						ClientConsole.print(Writer.LISTENER, "Disconnected from server!");
 						throw new DisconnectionException("Server disconnected!");
 						
 					case CONFIRM_TERMINATE:
 						out.close();
 						in.close();
 						socket.close();
-						ClientConsole.print(Writer.LISTENER, "Disconnected from server!");
 						active = false;
 						break;
 						
@@ -98,6 +96,8 @@ public class ServerListener extends Thread{
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(null, e.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
+		} finally {
+			ClientConsole.print(Writer.LISTENER, "Disconnected from server!");
 		}
 	}
 }

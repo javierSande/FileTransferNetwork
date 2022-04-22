@@ -7,8 +7,6 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.locks.ReentrantLock;
 
 import javax.swing.JOptionPane;
@@ -39,8 +37,6 @@ public class Server implements Observable<Server> {
 	private ReentrantLock userIdsLock = new ReentrantLock();
 	private ReentrantLock connectionsLock = new ReentrantLock();
 	private ReentrantLock observersLock = new ReentrantLock();
-	
-	private CyclicBarrier closeBarrier;
 	
 	private List<ClientListener> connections;
 	private int nUsers;
@@ -91,10 +87,6 @@ public class Server implements Observable<Server> {
 	
 	public Set<String> getFiles() {
 		return filesTable.getFiles();
-	}
-	
-	public CyclicBarrier getCloseBarrier() {
-		return closeBarrier;
 	}
 	
 	
@@ -154,22 +146,22 @@ public class Server implements Observable<Server> {
 	 * Ends the session with all the active clients
 	 * 
 	 * First, updates the server status to inactive to avoid new clients to connect.
-	 * Second, creates a barrier to synchronize the clients disconnection.
-	 * Third, starts to send terminate the connections.
+	 * Then, starts to send terminate the connections.
 	 * Finally, waits to all the client listeners to end their sessions.
 	 **/
 	
 	public void endSession() throws Exception {
 		activeLock.lock();
 		active = false;
-		closeBarrier = new CyclicBarrier(connections.size() + 1);
 		activeLock.unlock();
 		
-		for (ClientListener l: connections) {
+		for (ClientListener l: connections)
 			l.endConnection();
-		}
+		
+		for (ClientListener l: connections)
+			l.join();
+		
 		socket.close();
-		closeBarrier.await();
 	}
 	
 	
@@ -206,23 +198,9 @@ public class Server implements Observable<Server> {
 	 **/
 	
 	public void removeConnection(ClientListener c) {
-		activeLock.lock();
-		boolean active = isActive();
 		connectionsLock.lock();
 		connections.remove(c);
 		connectionsLock.unlock();
-		activeLock.unlock();
-		
-		if (!active)
-			try {
-				closeBarrier.await();
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (BrokenBarrierException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 	}
 	
 	public void sendMessageToUser(int id, Message m) throws IOException {
