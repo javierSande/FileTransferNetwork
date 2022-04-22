@@ -3,6 +3,7 @@ package server.data;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 import common.User;
@@ -36,18 +37,27 @@ public class FilesTable {
 		return list;
 	}
 	
+	/* public synchronized User getSender(String file)
+	 * 
+	 * Returns a random sender for the 
+	 **/
+	
 	public synchronized User getSender(String file) {
 		startRead();
-		User sender = fileMap.get(file).iterator().next();
+		User sender = null;
+		if (fileMap.containsKey(file)) {
+			Random rand = new Random(System.currentTimeMillis());
+			int size = fileMap.get(file).size();
+			sender = (User) fileMap.get(file).toArray()[rand.nextInt(size)];
+		}
+		
 		endRead();
 		return sender;
 	}
 	
 	public synchronized void addUserFiles(User u) {
 		if (nReaders > 0)
-			try {
-				wait();
-			} catch (InterruptedException e) { return; }
+			try { wait(); } catch (InterruptedException e) { return; }
 		for (String f: u.getSharedData()) {
 			if (!fileMap.containsKey(f))
 				fileMap.put(f, new HashSet<User>());
@@ -57,9 +67,7 @@ public class FilesTable {
 	
 	public synchronized void removeUserFiles(User u) {
 		if (nReaders > 0)
-			try {
-				wait();
-			} catch (InterruptedException e) { return; }
+			try { wait(); } catch (InterruptedException e) { return; }
 		for (String f: u.getSharedData()) {
 			if (fileMap.containsKey(f)) {
 				fileMap.get(f).remove(u);

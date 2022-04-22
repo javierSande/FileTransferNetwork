@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,12 +16,13 @@ import java.util.concurrent.Semaphore;
 
 import javax.swing.JOptionPane;
 
-import client.data.FilesTable;
+import client.console.ClientConsole;
+import client.console.ClientConsole.Writer;
+import client.data.FilesSet;
 import client.data.UsersList;
 import client.network.ServerListener;
 import client.view.ClientWindow;
 import common.User;
-import common.console.Console;
 import common.messages.*;
 import server.view.Observable;
 import server.view.Observer;
@@ -40,7 +42,7 @@ public class Client implements Observable<Client> {
 	private Map<String,String> filesToShare;
 	
 	private UsersList usersOnServer;
-	private FilesTable filesOnServer;
+	private FilesSet filesOnServer;
 	private List<Observer<Client>> observers;
 	
 	private Socket socket;
@@ -62,7 +64,7 @@ public class Client implements Observable<Client> {
 		this.socket = new Socket(serverIp, port);
 		
 		this.usersOnServer = new UsersList();
-		this.filesOnServer = new FilesTable();
+		this.filesOnServer = new FilesSet();
 		this.observers = new ArrayList<Observer<Client>>();
 		
 		transmissionSempaphore = new Semaphore(MAX_TRANSMISSIONS);
@@ -79,8 +81,9 @@ public class Client implements Observable<Client> {
 		return id;
 	}
 	
-	public void initDir() {
+	public void setDir() {
 		clientDir = String.format("Client%d", id);
+		// Creates a new directory to store the downloads
 		File f = new File(clientDir); 
 		f.mkdir();
 	}
@@ -169,8 +172,7 @@ public class Client implements Observable<Client> {
 	
 	/* public void updateServerInfo(List<User> users, List<String> files) 
 	 * 
-	 * Método encargado de actualizar los datos que el cliente almacena sobre el estado del servidor.
-	 * Además, notificará a sus observadores de que se han realizado cambios.
+	 * Updates the server information stored in the client.
 	 * */
 	
 	public void updateServerInfo(List<User> users, Set<String> files) {
@@ -195,23 +197,24 @@ public class Client implements Observable<Client> {
 			o.update(this);
 		}
 	}
-	
+
 	
 	/* private boolean startConnection()
 	 * 
-	 * Método encargado de iniciar la conexión con el servidor
+	 * Starts the connection with the server
 	 * 
-	 * En primer lugar enviará un mensaje de solicitud de conexión y esperará a la confirmación del servidor.
-	 * Una vez establecida esta conexion, solicitará la información de los usuarios al servidor.
-	 * La respuesta del servidor incluirá la lista de usuarios conectados y los archivos disponibles.
+	 * First, sends a connection request message and waits for the server confirmation. 
+	 * The confirmation message will contain its client id.
+	 * Once the confirmation is received, it will request the server's users information and waits for response.
+	 * Finally, it will store the user info and the available files.
 	 * 
-	 * Devolverá true en caso de que la conexión sea satisfactoria y false en caso contrario.
+	 * Returns true in case the connection is successfully established.
 	 * */
 	
 	private boolean startConnection() {
-		Console.print("Starting connection...");
+		ClientConsole.print(Writer.CLIENT, "Starting connection...");
 		try {			
-			ip = socket.getLocalAddress().getHostAddress();
+			ip = InetAddress.getLocalHost().getHostAddress();
 			
 			out.writeObject(new ConnectionMessage(ip, serverIp, name, new HashSet<String>(filesToShare.keySet())));
 			
@@ -242,10 +245,16 @@ public class Client implements Observable<Client> {
 			e.printStackTrace();
 			return false;
 		}
-		Console.print("Connected to server!");
+		ClientConsole.print(Writer.CLIENT, "Connected to server!");
 		return true;
 	}
 	
+	
+	/* public void sendUserData()
+	 * 
+	 * Sends the information of the client to the server.
+	 * It is invoked when there is any change on the shared files list.
+	 * */
 	
 	public void sendUserData() {
 		try {
@@ -266,13 +275,13 @@ public class Client implements Observable<Client> {
 	 * */
 	
 	public void endConnection() {
-		Console.print("Starting disconnection...");
+		ClientConsole.print(Writer.CLIENT, "Starting disconnection...");
 		listener.interrupt();
 		try {
 			out.writeObject(new TerminateMessage(ip, serverIp));
 			out.flush();
 		} catch (Exception e) {
-			Console.print("Failed to disconnect from server!");
+			ClientConsole.print(Writer.CLIENT, "Failed to disconnect from server!");
 			e.printStackTrace();
 		}
 	}
@@ -323,7 +332,7 @@ public class Client implements Observable<Client> {
 				}
 			} while(!connected);
 			
-			client.initDir();
+			client.setDir();
 			
 			Client myClient = client;
 			myClient.setListener(new ServerListener(client));

@@ -45,7 +45,7 @@ public class UsersTableModel extends AbstractTableModel implements Observer<Serv
 		case 2:
 			return u.getIp();
 		case 3:
-			return u.getServerPort();
+			return u.getClientPort();
 		case 4:
 			return u.getSharedData().size();
 		}

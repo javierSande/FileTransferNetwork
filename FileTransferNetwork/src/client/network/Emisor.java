@@ -8,10 +8,7 @@ import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import javax.swing.JOptionPane;
-
 import client.Client;
-import common.console.Console;
 import common.messages.*;
 
 public class Emisor extends Thread {
@@ -36,7 +33,7 @@ public class Emisor extends Thread {
 		return port;
 	}
 	
-	public void sendFile() {  
+	public void sendFile() throws IOException {  
 		byte[] b = new byte[1024]; 
 		File f = new File(client.getFilePath(file));  
 		try {
@@ -51,6 +48,7 @@ public class Emisor extends Thread {
 			
 			out.writeObject(new EOFMessage(client.getIp(), receiverIp));
 		} catch (IOException e) { 
+			out.writeObject(new ErrorMessage(client.getIp(), receiverIp, "Failed to transfer file"));
 			e.getStackTrace();
 		}
 	}
@@ -60,19 +58,14 @@ public class Emisor extends Thread {
 		try {
 			client.getSemaphore().acquire();
 			
-			Console.print(String.format("Start transmission of %s", file));
-			
 			Socket s = socket.accept();
 			out = new ObjectOutputStream(s.getOutputStream());
 			receiverIp = s.getInetAddress().getHostAddress();
 			
 			sendFile();
 			
-			Console.print(String.format("End transmission of %s", file));
-			
 		} catch (Exception e) {
-			JOptionPane.showMessageDialog(null, e.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
-			Console.print(String.format("Filed to send %s", file));
+			System.err.println(e.getMessage());
 			e.printStackTrace();
 		} finally {
 			client.getSemaphore().release();

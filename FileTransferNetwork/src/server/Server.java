@@ -1,6 +1,7 @@
 package server;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -48,7 +49,7 @@ public class Server implements Observable<Server> {
 	public Server() throws IOException {
 		active = true;
 		socket = new ServerSocket(0);
-		ip = socket.getInetAddress().getHostAddress();
+		ip = InetAddress.getLocalHost().getHostAddress();
 		port = socket.getLocalPort();
 		
 		clientsTable = new ClientsTable();

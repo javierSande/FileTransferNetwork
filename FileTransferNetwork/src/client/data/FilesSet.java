@@ -1,16 +1,14 @@
 package client.data;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
-import common.User;
-
-public class UsersList {
-	private List<User> users;
+public class FilesSet {
+	private Set<String> fileList;
 	private int nReaders;
 	
-	public UsersList() {
-		users = new ArrayList<User>();
+	public FilesSet() {
+		fileList = new HashSet<String>();
 		nReaders = 0;
 	}
 	
@@ -24,18 +22,18 @@ public class UsersList {
 			notify();
 	}
 	
-	public synchronized void setUsers(List<User> list) {
+	public synchronized void setFiles(Set<String> list) {
 		if (nReaders > 0)
 			try { wait(); } catch (InterruptedException e) { return; }
-		users = list;
+		fileList = list;
 		notify();
 	}
 	
-	public List<User> getUsers() {
+	public Set<String> getFiles() {
 		startRead();
-		List<User> list = new ArrayList<User>();
-		for (User u: users) 
-			list.add(u);
+		Set<String> list = new HashSet<String>();
+		for (String f: fileList) 
+			list.add(f);
 		endRead();
 		return list;
 	}

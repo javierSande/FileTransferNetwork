@@ -8,7 +8,8 @@ import java.net.Socket;
 import javax.swing.JOptionPane;
 
 import client.Client;
-import common.console.Console;
+import client.console.ClientConsole;
+import client.console.ClientConsole.Writer;
 import common.exceptions.DisconnectionException;
 import common.exceptions.MessageException;
 import common.messages.*;
@@ -41,10 +42,11 @@ public class ServerListener extends Thread{
 					switch(m.type) {
 					case SEND_REQUEST:
 						SendRequestMessage srm = (SendRequestMessage) m;
-						Console.print(String.format("Client %d requested file %s", srm.getReceiver().getId(), srm.getFile()));
+						ClientConsole.print(Writer.LISTENER, String.format("Client %d requested file %s", srm.getReceiver().getId(), srm.getFile()));
 						
 						Emisor e = new Emisor(client, srm.getFile());
 						e.start();
+						ClientConsole.print(Writer.LISTENER, String.format("Sending file %s", srm.getFile()));
 						out.writeObject(new ClientServerReadyMessage(client.getIp(), client.getServerIp(), e.getPort(),srm.getReceiver(), srm.getFile()));
 						out.flush();
 						break;
@@ -53,6 +55,7 @@ public class ServerListener extends Thread{
 						ServerClientReadyMessage sm = (ServerClientReadyMessage) m;
 						Receptor r = new Receptor(client, sm.getIp(), sm.getPort(), sm.getFile());
 						r.start();
+						ClientConsole.print(Writer.LISTENER, String.format("Receiving file %s", sm.getFile()));
 						break;
 						
 					case SERVER_UPDATE:
@@ -63,14 +66,14 @@ public class ServerListener extends Thread{
 					case TERMINATE:
 						out.writeObject(new ConfirmTerminateMessage(client.getIp(), client.getServerIp()));
 						out.flush();
-						Console.print("Disconnected from server!");
+						ClientConsole.print(Writer.LISTENER, "Disconnected from server!");
 						throw new DisconnectionException("Server disconnected!");
 						
 					case CONFIRM_TERMINATE:
 						out.close();
 						in.close();
 						socket.close();
-						Console.print("Disconnected from server!");
+						ClientConsole.print(Writer.LISTENER, "Disconnected from server!");
 						active = false;
 						break;
 						
@@ -90,6 +93,7 @@ public class ServerListener extends Thread{
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(null, e.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
+			System.exit(0);
 		}
 	}
 }

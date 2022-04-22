@@ -8,10 +8,10 @@ import java.net.Socket;
 import javax.swing.JOptionPane;
 
 import common.User;
-import common.console.Console;
 import common.exceptions.MessageException;
 import common.messages.*;
 import server.Server;
+import server.console.ServerConsole;
 import server.view.Observer;
 
 public class ClientListener extends Thread implements Observer<Server> {
@@ -62,7 +62,7 @@ public class ClientListener extends Thread implements Observer<Server> {
 			out.flush();
 			
 		} catch (Exception e) {
-			Console.print("Failed to disconnect from server!");
+			ServerConsole.print("Failed to disconnect from server!");
 			e.printStackTrace();
 		}
 	}
@@ -80,11 +80,11 @@ public class ClientListener extends Thread implements Observer<Server> {
 	@Override
 	public void run() {	
 		try {
-			Console.print("Client requests connection");
+			ServerConsole.print("Client requests connection");
 			
 			active = startConnection();
 			
-			Console.print(String.format("Client %d connects to server", user.getId()));
+			ServerConsole.print(String.format("Client %d connects to server", user.getId()));
 			
 			while (active) {
 				try {
@@ -105,18 +105,24 @@ public class ClientListener extends Thread implements Observer<Server> {
 						in.close();
 						socket.close();
 						
-						Console.print(String.format("Client %d disconnects from server", user.getId()));
+						ServerConsole.print(String.format("Client %d disconnects from server", user.getId()));
 						
 						active = false;
 						break;
 						
 					case FILE_REQUEST:
 						String file = ((FileRequestMessage)m).getFile();
-						Console.print(String.format("Client %d requests file %s", user.getId(), file));
+						ServerConsole.print(String.format("Client %d requests file %s", user.getId(), file));
 						
 						User sender = server.getSender(file);
-						sender.getOut().writeObject(new SendRequestMessage(server.getIp(), sender.getIp(), user, file));
-						sender.getOut().flush();
+						if (sender == null) {
+							user.getOut().writeObject(new ErrorMessage(server.getIp(), user.getIp(), "File not available"));
+							user.getOut().flush();
+						}
+						else {
+							sender.getOut().writeObject(new SendRequestMessage(server.getIp(), sender.getIp(), user, file));
+							sender.getOut().flush();
+						}
 						break;
 						
 					case TERMINATE:
@@ -126,7 +132,7 @@ public class ClientListener extends Thread implements Observer<Server> {
 						server.removeObserver(this);
 						server.removeUser(user);
 						
-						Console.print(String.format("Client %d disconnects from server", user.getId()));
+						ServerConsole.print(String.format("Client %d disconnects from server", user.getId()));
 						active = false;
 						break;
 						
@@ -141,7 +147,7 @@ public class ClientListener extends Thread implements Observer<Server> {
 						break;
 						
 					case ERROR:
-						Console.print(((ErrorMessage)m).getMessage());
+						ServerConsole.print(((ErrorMessage)m).getMessage());
 						break;
 						
 					default:
