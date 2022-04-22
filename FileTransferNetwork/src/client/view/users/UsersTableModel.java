@@ -6,8 +6,8 @@ import java.util.List;
 import javax.swing.table.AbstractTableModel;
 
 import client.Client;
+import common.Observer;
 import common.User;
-import server.view.Observer;
 
 @SuppressWarnings("serial")
 public class UsersTableModel extends AbstractTableModel implements Observer<Client> {

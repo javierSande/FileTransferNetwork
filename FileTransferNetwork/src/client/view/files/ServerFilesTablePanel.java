@@ -82,9 +82,11 @@ public class ServerFilesTablePanel extends JPanel implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 
 		if (e.getSource() == downloadButton) {			
-			int row = table.getSelectedRow();
-			client.requestFile((String)filesTableModel.getValueAt(row, 0));
-			System.out.println(String.format("Requests file %s", (String)filesTableModel.getValueAt(row, 0)));
+			int rows[] = table.getSelectedRows();
+			for (int i: rows)
+				client.requestFile((String)filesTableModel.getValueAt(i, 0));
+			
+			downloadButton.setEnabled(false);	
 		}
 	}
 }

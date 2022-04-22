@@ -5,9 +5,9 @@ import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
 
+import common.Observer;
 import common.User;
 import server.Server;
-import server.view.Observer;
 
 @SuppressWarnings("serial")
 public class UsersTableModel extends AbstractTableModel implements Observer<Server> {
@@ -53,7 +53,7 @@ public class UsersTableModel extends AbstractTableModel implements Observer<Serv
 	}
 	
 	@Override
-	public void update(Server s) {
+	public synchronized void update(Server s) {
 		users = s.getUsers();
 		fireTableStructureChanged();
 	}

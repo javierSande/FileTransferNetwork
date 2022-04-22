@@ -5,8 +5,8 @@ import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
 
+import common.Observer;
 import server.Server;
-import server.view.Observer;
 
 @SuppressWarnings("serial")
 public class FilesTableModel extends AbstractTableModel implements Observer<Server> {
@@ -39,10 +39,9 @@ public class FilesTableModel extends AbstractTableModel implements Observer<Serv
 	}
 	
 	@Override
-	public void update(Server s) {
+	public synchronized void update(Server s) {
 		files.clear();
-		for (String f: s.getFiles())
-			files.add(f);
+		files.addAll(files);
 		fireTableStructureChanged();
 	}
 

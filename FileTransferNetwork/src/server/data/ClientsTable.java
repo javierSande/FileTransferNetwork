@@ -5,15 +5,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import common.Monitor;
 import common.User;
 
-public class ClientsTable {
+public class ClientsTable extends Monitor {
 	private Map<Integer, User> users;
 	
-	private int nReaders;
-	
 	public ClientsTable() {
-		nReaders = 0;
 		users = new HashMap<Integer, User>();
 	}
 	
@@ -24,16 +22,6 @@ public class ClientsTable {
 		return list;
 	}
 	
-	private synchronized void startRead() {
-		nReaders++;
-	}
-	
-	private synchronized void endRead() {
-		nReaders--;
-		if (nReaders == 0)
-			notify();
-	}
-	
 	public User getUser(int id) {
 		startRead();
 		User u = users.get(id);
@@ -42,19 +30,14 @@ public class ClientsTable {
 	}
 	
 	public synchronized void addUser(User user) {
-		if (nReaders > 0)
-			try {
-				wait();
-			} catch (InterruptedException e) { return; }
+		startWrite();
 		if (!users.containsKey(user.getId()))
 			users.put(user.getId(), user);
+		notify();
 	}
 	
 	public synchronized void removeUser(User user) {
-		if (nReaders > 0)
-			try {
-				wait();
-			} catch (InterruptedException e) { return; }
+		startWrite();
 		if (users.containsKey(user.getId()))
 			users.remove(user.getId());
 		notify();

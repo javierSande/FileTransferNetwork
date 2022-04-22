@@ -40,6 +40,11 @@ public class ServerListener extends Thread{
 				try {
 					Message m = (Message) in.readObject();
 					switch(m.type) {
+					case CONFIRM_USER_LIST:
+						ConfirmUserListMessage um = (ConfirmUserListMessage) m;
+						client.updateServerInfo(um.getUserList(), um.getFileList());
+						break;
+						
 					case SEND_REQUEST:
 						SendRequestMessage srm = (SendRequestMessage) m;
 						ClientConsole.print(Writer.LISTENER, String.format("Client %d requested file %s", srm.getReceiver().getId(), srm.getFile()));
@@ -93,7 +98,6 @@ public class ServerListener extends Thread{
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(null, e.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
-			System.exit(0);
 		}
 	}
 }

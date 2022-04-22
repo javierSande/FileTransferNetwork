@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.concurrent.BrokenBarrierException;
 
 import javax.swing.JOptionPane;
 
@@ -12,9 +13,8 @@ import common.exceptions.MessageException;
 import common.messages.*;
 import server.Server;
 import server.console.ServerConsole;
-import server.view.Observer;
 
-public class ClientListener extends Thread implements Observer<Server> {
+public class ClientListener extends Thread {
 	
 	private boolean active;
 	
@@ -51,7 +51,7 @@ public class ClientListener extends Thread implements Observer<Server> {
 			out.writeObject(new ConfirmConnectionMessage(server.getIp(), user.getIp(), user));
 			out.flush();
 		} else {
-			throw new MessageException("Invalid message");
+			throw new MessageException("Failed to connect with client");
 		}
 		return true;
 	}
@@ -67,11 +67,12 @@ public class ClientListener extends Thread implements Observer<Server> {
 		}
 	}
 	
-	@Override
 	public void update(Server s) {
 		try {
-			out.writeObject(new ServerUpdateMessage(server.getIp(), user.getIp(), server.getUsers(), server.getFiles()));
-			out.flush();
+			synchronized(user) { 
+				out.writeObject(new ServerUpdateMessage(server.getIp(), user.getIp(), server.getUsers(), server.getFiles()));
+				out.flush();
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -93,12 +94,11 @@ public class ClientListener extends Thread implements Observer<Server> {
 					case CLIENT_SERVER_READY:
 						ClientServerReadyMessage crm = (ClientServerReadyMessage) m;
 						
-						server.getUser(crm.getReceiver().getId()).getOut().writeObject(new ServerClientReadyMessage(server.getIp(), crm.getReceiver().getIp(), user.getIp(), crm.getPort(), crm.getFile()));
-						out.flush();
+						server.sendMessageToUser(crm.getReceiver().getId(), new ServerClientReadyMessage(server.getIp(), crm.getReceiver().getIp(), user.getIp(), crm.getPort(), crm.getFile()));
 						break;
 						
 					case CONFIRM_TERMINATE:
-						server.removeObserver(this);
+						server.removeConnection(this);
 						server.removeUser(user);
 						
 						out.close();
@@ -115,21 +115,18 @@ public class ClientListener extends Thread implements Observer<Server> {
 						ServerConsole.print(String.format("Client %d requests file %s", user.getId(), file));
 						
 						User sender = server.getSender(file);
-						if (sender == null) {
-							user.getOut().writeObject(new ErrorMessage(server.getIp(), user.getIp(), "File not available"));
-							user.getOut().flush();
-						}
-						else {
-							sender.getOut().writeObject(new SendRequestMessage(server.getIp(), sender.getIp(), user, file));
-							sender.getOut().flush();
-						}
+						if (sender == null)
+							server.sendMessageToUser(user.getId(), new ErrorMessage(server.getIp(), user.getIp(), "File not available"));
+						else
+							server.sendMessageToUser(sender.getId(), new SendRequestMessage(server.getIp(), sender.getIp(), user, file));
 						break;
 						
 					case TERMINATE:
-						out.writeObject(new ConfirmTerminateMessage(server.getIp(), user.getIp()));
-						out.flush();
-						
-						server.removeObserver(this);
+						synchronized(user) { 
+							out.writeObject(new ConfirmTerminateMessage(server.getIp(), user.getIp()));
+							out.flush();
+						}
+						server.removeConnection(this);
 						server.removeUser(user);
 						
 						ServerConsole.print(String.format("Client %d disconnects from server", user.getId()));
@@ -137,8 +134,10 @@ public class ClientListener extends Thread implements Observer<Server> {
 						break;
 						
 					case USER_LIST:
-						out.writeObject(new ConfirmUserListMessage(server.getIp(), user.getIp(), server.getUsers(), server.getFiles()));
-						out.flush();
+						synchronized(user) { 
+							out.writeObject(new ConfirmUserListMessage(server.getIp(), user.getIp(), server.getUsers(), server.getFiles()));
+							out.flush();
+						}
 						break;
 					
 					case USER_UPDATE:
@@ -154,16 +153,18 @@ public class ClientListener extends Thread implements Observer<Server> {
 						throw new MessageException("Invalid message");
 					} 
 				} catch (MessageException e){
-					out.writeObject(new ErrorMessage(server.getIp(), user.getIp(), e.getMessage()));
+					synchronized(user) { 
+						out.writeObject(new ErrorMessage(server.getIp(), user.getIp(), e.getMessage()));
+						out.flush();
+					}
 					System.err.println(e.getMessage());
 					endConnection();
 				}
-			}
-			
-			server.removeConnection(this);
-			
+			}		
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(null, e.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
+			server.removeUser(user);
+			server.removeConnection(this);
 			e.printStackTrace();
 		}
 	}

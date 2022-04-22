@@ -7,29 +7,31 @@ import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 import client.console.ClientConsole;
 import client.console.ClientConsole.Writer;
 import client.data.FilesSet;
+import client.data.SharedFilesMap;
 import client.data.UsersList;
 import client.network.ServerListener;
 import client.view.ClientWindow;
+import common.Observable;
+import common.Observer;
 import common.User;
 import common.messages.*;
-import server.view.Observable;
-import server.view.Observer;
 
 public class Client implements Observable<Client> {
 	
-	public static final int MAX_TRANSMISSIONS = 1;
+	public static final int MAX_TRANSMISSIONS = 5;
 	
 	private int id;
 	private String name;
@@ -39,7 +41,7 @@ public class Client implements Observable<Client> {
 	
 	private String clientDir = "";
 	
-	private Map<String,String> filesToShare;
+	private SharedFilesMap filesToShare;
 	
 	private UsersList usersOnServer;
 	private FilesSet filesOnServer;
@@ -52,6 +54,7 @@ public class Client implements Observable<Client> {
 	private ServerListener listener;
 	
 	private Semaphore transmissionSempaphore;
+	private ReentrantLock observersLock;
 
 	public Client(String name, String serverIp, int port) throws IOException {
 		super();
@@ -59,7 +62,7 @@ public class Client implements Observable<Client> {
 		this.serverIp = serverIp;
 		this.port = port;
 		
-		this.filesToShare = new HashMap<String,String>();
+		this.filesToShare = new SharedFilesMap();
 		
 		this.socket = new Socket(serverIp, port);
 		
@@ -68,6 +71,7 @@ public class Client implements Observable<Client> {
 		this.observers = new ArrayList<Observer<Client>>();
 		
 		transmissionSempaphore = new Semaphore(MAX_TRANSMISSIONS);
+		observersLock = new ReentrantLock();
 		
 		out = new ObjectOutputStream(socket.getOutputStream());
 		in = new ObjectInputStream(socket.getInputStream());
@@ -136,15 +140,21 @@ public class Client implements Observable<Client> {
 	 */
 	
 	public String getFilePath(String file) {
-		return filesToShare.get(file);
+		return filesToShare.getFilePath(file);
 	}
 	
 	public Set<String> getSharedFiles() {
-		return new HashSet<String>(filesToShare.keySet());
+		return filesToShare.getFiles();
 	}
 	
 	public void addSharedFiles(Map<String, String> files) {
-		filesToShare.putAll(files);
+		filesToShare.addFiles(files);
+		sendUserData();
+		notifyChange();
+	}
+	
+	public void addSharedFile(String file, String path) {
+		filesToShare.addFile(file, path);
 		sendUserData();
 		notifyChange();
 	}
@@ -157,13 +167,14 @@ public class Client implements Observable<Client> {
 	}
 	
 	public void deleteSharedFile(String file) {
-		filesToShare.remove(file);
+		filesToShare.deleteFile(file);
 	}
 	
 	public List<String> getFiles() {
 		List<String> files = new ArrayList<String>();
+		Set<String> sharedFiles = filesToShare.getFiles();
 		for (String f: filesOnServer.getFiles()) {
-			if (!filesToShare.containsKey(f))
+			if (!sharedFiles.contains(f))
 				files.add(f);
 		}
 		return files;
@@ -188,14 +199,25 @@ public class Client implements Observable<Client> {
 	
 	@Override
 	public void addObserver(Observer<Client> o) {
+		observersLock.lock();
 		observers.add(o);
 		o.update(this);
+		observersLock.unlock();
 	}
 	
 	public void notifyChange() {
-		for (Observer<Client> o: observers) {
-			o.update(this);
-		}
+		observersLock.lock();
+		Client c = this;
+		for (Observer<Client> o: observers)
+			SwingUtilities.invokeLater(new Runnable() {
+	
+			    @Override
+			    public void run() {
+			        o.update(c);
+			    }
+	
+			});
+		observersLock.unlock();
 	}
 
 	
@@ -216,7 +238,7 @@ public class Client implements Observable<Client> {
 		try {			
 			ip = InetAddress.getLocalHost().getHostAddress();
 			
-			out.writeObject(new ConnectionMessage(ip, serverIp, name, new HashSet<String>(filesToShare.keySet())));
+			out.writeObject(new ConnectionMessage(ip, serverIp, name, new HashSet<String>(filesToShare.getFiles())));
 			
 			Message m = (Message) in.readObject();
 			
@@ -256,7 +278,7 @@ public class Client implements Observable<Client> {
 	 * It is invoked when there is any change on the shared files list.
 	 * */
 	
-	public void sendUserData() {
+	public synchronized void sendUserData() {
 		try {
 			out.writeObject(new UserUpdateMessage(ip, serverIp, id, getSharedFiles()));
 			out.flush();
@@ -276,7 +298,6 @@ public class Client implements Observable<Client> {
 	
 	public void endConnection() {
 		ClientConsole.print(Writer.CLIENT, "Starting disconnection...");
-		listener.interrupt();
 		try {
 			out.writeObject(new TerminateMessage(ip, serverIp));
 			out.flush();

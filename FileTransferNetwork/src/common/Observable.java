@@ -1,4 +1,4 @@
-package server.view;
+package common;
 
 public interface Observable<T> {
 	public void addObserver(Observer<T> o);

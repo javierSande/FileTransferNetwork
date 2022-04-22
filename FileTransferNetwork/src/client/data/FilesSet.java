@@ -3,28 +3,17 @@ package client.data;
 import java.util.HashSet;
 import java.util.Set;
 
-public class FilesSet {
+import common.Monitor;
+
+public class FilesSet extends Monitor {
 	private Set<String> fileList;
-	private int nReaders;
 	
 	public FilesSet() {
 		fileList = new HashSet<String>();
-		nReaders = 0;
-	}
-	
-	private synchronized void startRead() {
-		nReaders++;
-	}
-	
-	private synchronized void endRead() {
-		nReaders--;
-		if (nReaders == 0)
-			notify();
 	}
 	
 	public synchronized void setFiles(Set<String> list) {
-		if (nReaders > 0)
-			try { wait(); } catch (InterruptedException e) { return; }
+		startWrite();
 		fileList = list;
 		notify();
 	}

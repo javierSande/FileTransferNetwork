@@ -6,26 +6,14 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+import common.Monitor;
 import common.User;
 
-public class FilesTable {
+public class FilesTable extends Monitor {
 	private Map<String, Set<User>> fileMap;
 	
-	private int nReaders;
-	
 	public FilesTable() {
-		nReaders = 0;
 		fileMap = new HashMap<String, Set<User>>();
-	}
-	
-	private synchronized void startRead() {
-		nReaders++;
-	}
-	
-	private synchronized void endRead() {
-		nReaders--;
-		if (nReaders == 0)
-			notify();
 	}
 	
 	public synchronized Set<String> getFiles() {
@@ -56,18 +44,17 @@ public class FilesTable {
 	}
 	
 	public synchronized void addUserFiles(User u) {
-		if (nReaders > 0)
-			try { wait(); } catch (InterruptedException e) { return; }
+		startWrite();
 		for (String f: u.getSharedData()) {
 			if (!fileMap.containsKey(f))
 				fileMap.put(f, new HashSet<User>());
 			fileMap.get(f).add(u);
 		}
+		notify();
 	}
 	
 	public synchronized void removeUserFiles(User u) {
-		if (nReaders > 0)
-			try { wait(); } catch (InterruptedException e) { return; }
+		startWrite();
 		for (String f: u.getSharedData()) {
 			if (fileMap.containsKey(f)) {
 				fileMap.get(f).remove(u);

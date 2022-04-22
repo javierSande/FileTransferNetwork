@@ -6,7 +6,7 @@ import java.util.List;
 import javax.swing.table.AbstractTableModel;
 
 import client.Client;
-import server.view.Observer;
+import common.Observer;
 
 @SuppressWarnings("serial")
 public class ServerFilesTableModel extends AbstractTableModel implements Observer<Client> {
@@ -34,12 +34,12 @@ public class ServerFilesTableModel extends AbstractTableModel implements Observe
 	}
 
 	@Override
-	public Object getValueAt(int rowIndex, int columnIndex) {
+	public synchronized Object getValueAt(int rowIndex, int columnIndex) {
 		return files.get(rowIndex);
 	}
 	
 	@Override
-	public void update(Client c) {
+	public synchronized void update(Client c) {
 		files = c.getFiles();
 		fireTableStructureChanged();
 	}

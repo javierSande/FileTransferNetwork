@@ -14,12 +14,13 @@ import java.util.concurrent.locks.ReentrantLock;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
+import common.Observable;
+import common.Observer;
 import common.User;
-import server.view.Observable;
+import common.messages.Message;
 import server.data.ClientsTable;
 import server.data.FilesTable;
 import server.network.ClientListener;
-import server.view.Observer;
 import server.view.ServerWindow;
 
 public class Server implements Observable<Server> {
@@ -188,7 +189,6 @@ public class Server implements Observable<Server> {
 			ClientListener c = new ClientListener(this, s);
 			c.start();
 			connections.add(c);
-			addObserver(c);
 			connectionsLock.unlock();
 		} else {
 			s.close();
@@ -205,7 +205,7 @@ public class Server implements Observable<Server> {
 	 * If it is not active, it waits all the clients to disconnect.
 	 **/
 	
-	public void removeConnection(ClientListener c) throws InterruptedException, BrokenBarrierException {
+	public void removeConnection(ClientListener c) {
 		activeLock.lock();
 		boolean active = isActive();
 		connectionsLock.lock();
@@ -214,7 +214,23 @@ public class Server implements Observable<Server> {
 		activeLock.unlock();
 		
 		if (!active)
-			closeBarrier.await();
+			try {
+				closeBarrier.await();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (BrokenBarrierException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	}
+	
+	public void sendMessageToUser(int id, Message m) throws IOException {
+		User u = getUser(id);
+		synchronized(u) { 
+			u.getOut().writeObject(m);
+			u.getOut().flush();
+		}
 	}
 	
 	
@@ -236,10 +252,21 @@ public class Server implements Observable<Server> {
 		observersLock.unlock();
 	}
 	
-	public synchronized void notifyUpdate() {
-		for (Observer<Server> o: observers) {
-			o.update(this);
-		}
+	public void notifyUpdate() {
+		observersLock.lock();
+		Server s = this;
+		for (Observer<Server> o: observers)
+			SwingUtilities.invokeLater(new Runnable() {
+				
+			    @Override
+			    public void run() {
+			        o.update(s);
+			    }
+	
+			});
+		for (ClientListener l: connections)
+			l.update(s);
+		observersLock.unlock();
 	}
 	
 	
