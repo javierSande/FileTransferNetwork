@@ -155,8 +155,10 @@ public class Server implements Observable<Server> {
 		active = false;
 		activeLock.unlock();
 		
+		connectionsLock.lock();
 		for (ClientListener l: connections)
 			l.endConnection();
+		connectionsLock.unlock();
 		
 		while(!connections.isEmpty());
 		socket.close();
