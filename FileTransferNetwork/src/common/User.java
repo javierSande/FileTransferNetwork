@@ -1,21 +1,27 @@
 package common;
 
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.Socket;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.locks.ReentrantLock;
 
-public class User implements Serializable {
+import common.messages.Message;
+
+public class User extends Monitor implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
 	private int id;
-	private String name;
+	private final String name;
 	
-	private String ip;
-	private int serverPort;
-	private int clientPort;
+	private final String ip;
+	private final int serverPort;
+	private final int clientPort;
+	
+	private transient ReentrantLock outputLock = new ReentrantLock();
 	
 	private transient ObjectOutputStream out;
 	private transient ObjectInputStream in;
@@ -74,26 +80,45 @@ public class User implements Serializable {
 	public ObjectInputStream getIn() {
 		return in;
 	}
+	
+	public void sendMessage(Message m) throws IOException {
+		outputLock.lock();
+		out.writeObject(m);
+		out.flush();
+		outputLock.unlock();
+	}
 
 	public Set<String> getSharedData() {
-		return sharedData;
+		startRead();
+		Set<String> data =  sharedData;
+		endRead();
+		return data;
 	}
 	
-	public void setSharedData(Set<String> files) {
+	public synchronized void setSharedData(Set<String> files) {
+		startWrite();
 		sharedData = files;
-		
+		notify();
 	}
 
 	// Add data to share
-	public void shareData(String filepath) {
+	public synchronized void shareData(String filepath) {
+		startWrite();
 		sharedData.add(filepath);
+		notify();
 	}
 	
 	public String toString() {
-		return String.format("%d %s (%s:%d)", id, name, ip, serverPort);
+		startRead();
+		String s =  String.format("%d %s (%s:%d)", id, name, ip, serverPort);
+		endRead();
+		return s;
 	}
 	
 	public User clone() {
-		return (new User(id, name, ip, clientPort, serverPort, sharedData));
+		startRead();
+		User u = (new User(id, name, ip, clientPort, serverPort, sharedData));
+		endRead();
+		return u;
 	}
 }

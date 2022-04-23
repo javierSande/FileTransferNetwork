@@ -66,6 +66,7 @@ public class Receptor extends Thread {
 			saveFile();
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(null, e.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
+			System.err.print(e.getMessage());
 			e.printStackTrace();
 		}
 	}

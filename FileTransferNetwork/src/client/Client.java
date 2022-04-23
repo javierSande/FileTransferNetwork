@@ -318,6 +318,8 @@ public class Client implements Observable<Client> {
 	public void requestFile(String file) {
 		try {
 			out.writeObject(new FileRequestMessage(ip, serverIp, file));
+			out.flush();
+			ClientConsole.print(Writer.CLIENT, String.format("Requesting file %s", file));
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(null, e.getMessage());
 			e.printStackTrace();

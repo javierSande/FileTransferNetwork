@@ -15,6 +15,7 @@ public class ClientsTable extends Monitor {
 		users = new HashMap<Integer, User>();
 	}
 	
+	// TODO users.values() java lo considera una modificación
 	public synchronized List<User> getUsers() {
 		List<User> list = new ArrayList<User>();
 		for (User u: users.values()) 

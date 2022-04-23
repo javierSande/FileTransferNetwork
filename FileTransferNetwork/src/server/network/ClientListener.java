@@ -36,10 +36,6 @@ public class ClientListener extends Thread {
 		}
 	}
 	
-	public boolean isActive() {
-		return active;
-	}
-	
 	private boolean startConnection() throws Exception {
 		Message m = (Message) in.readObject();
 		
@@ -47,8 +43,8 @@ public class ClientListener extends Thread {
 			ConnectionMessage cm = (ConnectionMessage) m;
 			user = new User(cm.getName(), socket, in, out, cm.getDataToShare());
 			server.addUser(user);
-			out.writeObject(new ConfirmConnectionMessage(server.getIp(), user.getIp(), user));
-			out.flush();
+			
+			user.sendMessage(new ConfirmConnectionMessage(server.getIp(), user.getIp(), user));
 		} else {
 			throw new MessageException("Failed to connect with client");
 		}
@@ -57,9 +53,7 @@ public class ClientListener extends Thread {
 	
 	public void endConnection() throws Exception {
 		try {
-			out.writeObject(new TerminateMessage(server.getIp(), user.getIp()));
-			out.flush();
-			
+			user.sendMessage(new TerminateMessage(server.getIp(), user.getIp()));
 		} catch (Exception e) {
 			ServerConsole.print("Failed to disconnect from server!");
 			e.printStackTrace();
@@ -68,10 +62,7 @@ public class ClientListener extends Thread {
 	
 	public void update(Server s) {
 		try {
-			synchronized(user) { 
-				out.writeObject(new ServerUpdateMessage(server.getIp(), user.getIp(), server.getUsers(), server.getFiles()));
-				out.flush();
-			}
+			user.sendMessage(new ServerUpdateMessage(server.getIp(), user.getIp(), server.getUsers(), server.getFiles()));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -121,10 +112,7 @@ public class ClientListener extends Thread {
 						break;
 						
 					case TERMINATE:
-						synchronized(user) { 
-							out.writeObject(new ConfirmTerminateMessage(server.getIp(), user.getIp()));
-							out.flush();
-						}
+						user.sendMessage(new ConfirmTerminateMessage(server.getIp(), user.getIp()));
 						server.removeConnection(this);
 						server.removeUser(user);
 						
@@ -133,10 +121,7 @@ public class ClientListener extends Thread {
 						break;
 						
 					case USER_LIST:
-						synchronized(user) { 
-							out.writeObject(new ConfirmUserListMessage(server.getIp(), user.getIp(), server.getUsers(), server.getFiles()));
-							out.flush();
-						}
+						user.sendMessage(new ConfirmUserListMessage(server.getIp(), user.getIp(), server.getUsers(), server.getFiles()));
 						break;
 					
 					case USER_UPDATE:
@@ -152,18 +137,15 @@ public class ClientListener extends Thread {
 						throw new MessageException("Invalid message");
 					} 
 				} catch (MessageException e){
-					synchronized(user) { 
-						out.writeObject(new ErrorMessage(server.getIp(), user.getIp(), e.getMessage()));
-						out.flush();
-					}
+					user.sendMessage(new ErrorMessage(server.getIp(), user.getIp(), e.getMessage()));
 					System.err.println(e.getMessage());
 					endConnection();
 				}
 			}		
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(null, e.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
-			server.removeUser(user);
 			server.removeConnection(this);
+			server.removeUser(user);
 			e.printStackTrace();
 		}
 	}

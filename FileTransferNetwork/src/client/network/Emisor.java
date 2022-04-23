@@ -49,10 +49,14 @@ public class Emisor extends Thread {
 			
 			out.writeObject(new EOFMessage(client.getIp(), receiverIp));
 		} catch (FileNotFoundException e) { 
-			out.writeObject(new ErrorMessage(client.getIp(), receiverIp, "Failed to transfer file"));
+			out.writeObject(new ErrorMessage(client.getIp(), receiverIp, String.format("Failed to transfer file %s", file)));
 			client.deleteSharedFile(file);
+			System.err.print(e.getMessage());
+			System.out.print(e.getMessage());
+			e.getStackTrace();
 		} catch (Exception e) { 
-			out.writeObject(new ErrorMessage(client.getIp(), receiverIp, "Failed to transfer file"));
+			out.writeObject(new ErrorMessage(client.getIp(), receiverIp, String.format("Failed to transfer file %s", file)));
+			System.err.print(e.getMessage());
 			e.getStackTrace();
 		}
 	}

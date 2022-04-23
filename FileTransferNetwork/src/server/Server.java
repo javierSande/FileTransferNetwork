@@ -202,11 +202,7 @@ public class Server implements Observable<Server> {
 	}
 	
 	public void sendMessageToUser(int id, Message m) throws IOException {
-		User u = getUser(id);
-		synchronized(u) { 
-			u.getOut().writeObject(m);
-			u.getOut().flush();
-		}
+		getUser(id).sendMessage(m);
 	}
 	
 	
@@ -240,9 +236,12 @@ public class Server implements Observable<Server> {
 			    }
 	
 			});
+		observersLock.unlock();
+		
+		connectionsLock.lock();
 		for (ClientListener l: connections)
 			l.update(s);
-		observersLock.unlock();
+		connectionsLock.unlock();
 	}
 	
 	
