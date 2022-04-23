@@ -1,3 +1,10 @@
+/*
+ * Programacion Concurrente - Practica Final
+ * Curso 2021/22
+ * Prof.: Elvira Albert Albiol
+ * Alumnos: Javier Sande Rios, Mario Sanz Guerrero
+ */
+
 package common.locks;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicIntegerArray;
