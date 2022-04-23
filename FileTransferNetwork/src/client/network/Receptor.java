@@ -50,13 +50,13 @@ public class Receptor extends Thread {
 		if (m.type == MessageType.ERROR) {
 			ErrorMessage em = (ErrorMessage) m;
 			JOptionPane.showMessageDialog(null, em.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
-		} else if (m.type != MessageType.EOF)
+		} else if (m.type == MessageType.EOF)
+			client.addSharedFile(file, f.getAbsolutePath());
+		else 
 			throw new Exception("Failed to transfer file");
 		
 		in.close();   
 		socket.close();
-		
-		client.addSharedFile(file, f.getAbsolutePath());
 	}
 
 	@Override

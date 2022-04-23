@@ -2,6 +2,7 @@ package client.network;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectOutputStream;
@@ -34,9 +35,9 @@ public class Emisor extends Thread {
 	}
 	
 	public void sendFile() throws IOException {  
-		byte[] b = new byte[1024]; 
-		File f = new File(client.getFilePath(file));  
+		byte[] b = new byte[1024];  
 		try {
+			File f = new File(client.getFilePath(file)); 
 			InputStream ins = new FileInputStream(f);
 			int n = ins.read(b);
 			while (n != -1) {
@@ -47,7 +48,10 @@ public class Emisor extends Thread {
 			ins.close();
 			
 			out.writeObject(new EOFMessage(client.getIp(), receiverIp));
-		} catch (IOException e) { 
+		} catch (FileNotFoundException e) { 
+			out.writeObject(new ErrorMessage(client.getIp(), receiverIp, "Failed to transfer file"));
+			client.deleteSharedFile(file);
+		} catch (Exception e) { 
 			out.writeObject(new ErrorMessage(client.getIp(), receiverIp, "Failed to transfer file"));
 			e.getStackTrace();
 		}
@@ -65,7 +69,6 @@ public class Emisor extends Thread {
 			sendFile();
 			
 		} catch (Exception e) {
-			System.err.println(e.getMessage());
 			e.printStackTrace();
 		} finally {
 			client.getSemaphore().release();

@@ -159,15 +159,17 @@ public class Client implements Observable<Client> {
 		notifyChange();
 	}
 	
-	public void deleteSharedFiles(List<String> file) {
-		for (String f: file)
-			deleteSharedFile(f);
+	public void deleteSharedFiles(List<String> files) {
+		for (String f: files)
+			filesToShare.deleteFile(f);
 		sendUserData();
 		notifyChange();
 	}
 	
 	public void deleteSharedFile(String file) {
 		filesToShare.deleteFile(file);
+		sendUserData();
+		notifyChange();
 	}
 	
 	public List<String> getFiles() {
