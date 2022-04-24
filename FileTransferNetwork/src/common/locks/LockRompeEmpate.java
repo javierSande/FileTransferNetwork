@@ -14,8 +14,6 @@ public class LockRompeEmpate implements Lock {
 	private volatile AtomicIntegerArray last;
 	private int n;
 	
-	
-
 	public LockRompeEmpate(int n) {
 		in = new AtomicIntegerArray(n+1);
 		last = new AtomicIntegerArray(n+1);

@@ -22,7 +22,14 @@ public class ClientsTable extends Monitor {
 		users = new HashMap<Integer, User>();
 	}
 	
-	// TODO users.values() java lo considera una modificación
+	
+	/* public synchronized List<User> getUsers()
+	 * 
+	 * Simple function to get a list of the users currently connected to the server.
+	 * The reason for making it synchronized is because Java considers users.values()
+	 * as a modification even though it is a read of data. The rest of the synchronized
+	 * methods of this class are modifications.
+	 */
 	public synchronized List<User> getUsers() {
 		List<User> list = new ArrayList<User>();
 		for (User u: users.values()) 

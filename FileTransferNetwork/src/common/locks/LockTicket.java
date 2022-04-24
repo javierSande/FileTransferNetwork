@@ -14,13 +14,11 @@ public class LockTicket implements Lock {
 	private AtomicIntegerArray turn;
 	private int next;
 	private AtomicInteger number;
-	
-	
 
 	public LockTicket(int n) {
-		turn = new AtomicIntegerArray(n+1);
-		this.next = 0;
-		this.number = new AtomicInteger(0);
+		this.number = new AtomicInteger(1);
+		this.next = 1;
+		this.turn = new AtomicIntegerArray(n+1);
 		
 		for (int k = 0; k <= n; k++) {
 			turn.set(k, 0);

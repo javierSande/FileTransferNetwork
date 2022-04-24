@@ -45,7 +45,7 @@ public class Receptor extends Thread {
 		
 		Message m = (Message) in.readObject();
 		
-		while (m.type == MessageType.DATA) {  
+		while (m.type == MessageType.DATA) {
 			byte[] b = ((DataMessage) m).getData();
 			int size = ((DataMessage) m).getSize();
 			fw.write (b, 0, size);

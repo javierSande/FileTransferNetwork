@@ -20,6 +20,7 @@ import client.Client;
 import common.messages.*;
 
 public class Emisor extends Thread {
+	
 	private Client client;
 	
 	private String receiverIp;
