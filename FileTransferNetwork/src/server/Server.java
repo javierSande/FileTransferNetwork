@@ -206,9 +206,6 @@ public class Server implements Observable<Server> {
 	/* public void removeConnection(ClientListener c)
 	 * 
 	 * Removes a client listener
-	 * 
-	 * First, checks the server status and removes the listener.
-	 * If it is not active, it waits all the clients to disconnect.
 	 **/
 	
 	public void removeConnection(ClientListener c) {
@@ -233,13 +230,6 @@ public class Server implements Observable<Server> {
 		observersLock.unlock();
 	}
 	
-	// TODO: Esta funcion no se usa, pero no se si prefieres dejarla
-	@Override
-	public void removeObserver(Observer<Server> o) {
-		observersLock.lock();
-		observers.remove(o);
-		observersLock.unlock();
-	}
 	
 	public void notifyUpdate() {
 		observersLock.lock();

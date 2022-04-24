@@ -62,6 +62,9 @@ public class Client implements Observable<Client> {
 	
 	private Semaphore transmissionSempaphore;
 	private ReentrantLock observersLock;
+	
+	// outputLock: used to atomically access the output stream
+	private transient ReentrantLock outputLock = new ReentrantLock();
 
 	public Client(String name, String serverIp, int port) throws IOException {
 		super();
@@ -289,12 +292,18 @@ public class Client implements Observable<Client> {
 	
 	public synchronized void sendUserData() {
 		try {
-			out.writeObject(new UserUpdateMessage(ip, serverIp, id, getSharedFiles()));
-			out.flush();
+			sendMessage(new UserUpdateMessage(ip, serverIp, id, getSharedFiles()));
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(null, e.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
 		}
+	}
+	
+	public void sendMessage(Message m) throws IOException {
+		outputLock.lock();
+		out.writeObject(m);
+		out.flush();
+		outputLock.unlock();
 	}
 
 	
@@ -308,8 +317,7 @@ public class Client implements Observable<Client> {
 	public void endConnection() {
 		ClientConsole.print(Writer.CLIENT, "Starting disconnection...");
 		try {
-			out.writeObject(new TerminateMessage(ip, serverIp));
-			out.flush();
+			sendMessage(new TerminateMessage(ip, serverIp));
 		} catch (Exception e) {
 			ClientConsole.print(Writer.CLIENT, "Failed to disconnect from server!");
 			e.printStackTrace();
@@ -324,8 +332,7 @@ public class Client implements Observable<Client> {
 	
 	public void requestFile(String file) {
 		try {
-			out.writeObject(new FileRequestMessage(ip, serverIp, file));
-			out.flush();
+			sendMessage(new FileRequestMessage(ip, serverIp, file));
 			ClientConsole.print(Writer.CLIENT, String.format("Requesting file %s", file));
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(null, e.getMessage());

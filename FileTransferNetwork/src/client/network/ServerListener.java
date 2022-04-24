@@ -59,8 +59,7 @@ public class ServerListener extends Thread{
 						Emisor e = new Emisor(client, srm.getFile());
 						e.start();
 						ClientConsole.print(Writer.LISTENER, String.format("Sending file %s", srm.getFile()));
-						out.writeObject(new ClientServerReadyMessage(client.getIp(), client.getServerIp(), e.getPort(),srm.getReceiver(), srm.getFile()));
-						out.flush();
+						client.sendMessage(new ClientServerReadyMessage(client.getIp(), client.getServerIp(), e.getPort(),srm.getReceiver(), srm.getFile()));
 						break;
 						
 					case SERVER_CLIENT_READY:
@@ -76,8 +75,7 @@ public class ServerListener extends Thread{
 						break;
 						
 					case TERMINATE:
-						out.writeObject(new ConfirmTerminateMessage(client.getIp(), client.getServerIp()));
-						out.flush();
+						client.sendMessage(new ConfirmTerminateMessage(client.getIp(), client.getServerIp()));
 						throw new DisconnectionException("Server disconnected!");
 						
 					case CONFIRM_TERMINATE:
@@ -95,7 +93,7 @@ public class ServerListener extends Thread{
 						throw new MessageException("Invalid message");
 					} 
 				} catch (MessageException e){
-					out.writeObject(new ErrorMessage(client.getIp(), client.getServerIp(), e.getMessage()));
+					client.sendMessage(new ErrorMessage(client.getIp(), client.getServerIp(), e.getMessage()));
 					System.err.println(e.getMessage());
 				}
 			}
