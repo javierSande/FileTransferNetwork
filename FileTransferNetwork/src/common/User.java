@@ -20,6 +20,17 @@ import common.messages.Message;
 
 public class User extends Monitor implements Serializable {
 	
+	/* User
+	 * 
+	 * This class represents in a Monitor all the data required by the application of
+	 * every user connected to the server to work correctly.
+	 * Its goal is to represent the clients internally in the application.
+	 * As these data is going to be written and read at different points of the
+	 * application flow, it has the readers-writers problem. For this same reason,
+	 * each method that tries to read or write data should follow the protocol of the
+	 * Monitor class. 
+	 */
+	
 	private static final long serialVersionUID = 1L;
 	private int id;
 	private final String name;

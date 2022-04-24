@@ -22,6 +22,7 @@ public class SharedFilesMap extends Monitor {
 	 * This class represents a map that pairs every file with its absolute path
 	 * so that it can be accessed.
 	 * It has the readers-writers problem, that is why it extends the Monitor class.
+	 * Every method reading or writing data should follow the Monitor class protocol.
 	 */
 	
 	private Map<String,String> filesMap;

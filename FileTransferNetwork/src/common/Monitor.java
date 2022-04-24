@@ -13,6 +13,8 @@ public abstract class Monitor {
 	 * 
 	 * Abstract class to be extended by those classes that have the readers-writers
 	 * problem.
+	 * 
+	 * Protocol to extend this class:
 	 * A reading method should start calling startRead() and end calling endRead()
 	 * and a writing method should start calling startWrite() and end calling
 	 * notify().

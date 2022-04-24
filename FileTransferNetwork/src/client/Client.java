@@ -299,6 +299,18 @@ public class Client implements Observable<Client> {
 		}
 	}
 	
+	
+	/* public void sendMessage(Message m)
+	 * 
+	 * Sends a message through the output stream of the client.
+	 * This function is invoked whenever we want to output any message once the
+	 * message object is created.
+	 * 
+	 * It locks the outputLock to ensure that we are only writing this message.
+	 * Then it flushes to ensure that we output everything pending in the output
+	 * list. Finally, the lock is unlocked.
+	 */
+	
 	public void sendMessage(Message m) throws IOException {
 		outputLock.lock();
 		out.writeObject(m);

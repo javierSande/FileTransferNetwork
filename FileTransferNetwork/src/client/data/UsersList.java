@@ -14,6 +14,15 @@ import common.Monitor;
 import common.User;
 
 public class UsersList extends Monitor {
+	
+	/* UsersList
+	 * 
+	 * This class represents the list of connected users to the server.
+	 * It is implemented as a Monitor because it has the readers-writers problem.
+	 * For this same reason, each method that tries to read or write data should
+	 * follow the protocol of the Monitor class.
+	 */
+	
 	private List<User> users;
 	
 	public UsersList() {

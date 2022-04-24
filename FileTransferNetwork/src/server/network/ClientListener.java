@@ -43,6 +43,17 @@ public class ClientListener extends Thread {
 		}
 	}
 	
+	/* private boolean startConnection() throws Exception
+	 * 
+	 * Creates the connection between every new client and the server.
+	 * 
+	 * It is called from the run() method of the thread, so it works as a receptor of the
+	 * ConnectionMessage from a new connection.
+	 * Once the message is received, a new user is created with all its data (contained in
+	 * the message) and it is stored in the server so that the application can work with
+	 * this client from now on.
+	 */
+	
 	private boolean startConnection() throws Exception {
 		Message m = (Message) in.readObject();
 		
@@ -89,12 +100,16 @@ public class ClientListener extends Thread {
 					Message m = (Message) in.readObject();
 					switch(m.type) {
 					case CLIENT_SERVER_READY:
+						// Message used by the sender client of a request to tell us that it is available to send
 						ClientServerReadyMessage crm = (ClientServerReadyMessage) m;
 						
 						server.sendMessageToUser(crm.getReceiver().getId(), new ServerClientReadyMessage(server.getIp(), crm.getReceiver().getIp(), user.getIp(), crm.getPort(), crm.getFile()));
 						break;
 						
 					case CONFIRM_TERMINATE:
+						// Confirmation of end of session received by the server from every client when the server
+						// wants to end the connection (it previously telled all the users that the session is going
+						// to finish and every client will confirm its closure through this message)
 						server.removeConnection(this);
 						server.removeUser(user);
 						
@@ -108,17 +123,24 @@ public class ClientListener extends Thread {
 						break;
 						
 					case FILE_REQUEST:
+						// Message received by the server from a client that wants to request a file
 						String file = ((FileRequestMessage)m).getFile();
 						ServerConsole.print(String.format("Client %d requests file %s", user.getId(), file));
 						
+						// Pick a random sender client from those clients that have available the requested file
 						User sender = server.getSender(file);
 						if (sender == null)
+							// if such sender does not exist, send an error message to the user
 							server.sendMessageToUser(user.getId(), new ErrorMessage(server.getIp(), user.getIp(), "File not available"));
 						else
+							// otherwise, send a request message to the randomly selected sender
 							server.sendMessageToUser(sender.getId(), new SendRequestMessage(server.getIp(), sender.getIp(), user, file));
 						break;
 						
 					case TERMINATE:
+						// Message received by the server from a client that wants to close its connection. The difference
+						// with CONFIRM_TERMINATE is that, in this case, it is an independent client who wants to close the
+						// connection with the server.
 						user.sendMessage(new ConfirmTerminateMessage(server.getIp(), user.getIp()));
 						server.removeConnection(this);
 						server.removeUser(user);
@@ -128,15 +150,19 @@ public class ClientListener extends Thread {
 						break;
 						
 					case USER_LIST:
+						// Request of the list of users connected from a client. This request is done the moment a client is
+						// created, so it will be done by all clients.
 						user.sendMessage(new ConfirmUserListMessage(server.getIp(), user.getIp(), server.getUsers(), server.getFiles()));
 						break;
 					
 					case USER_UPDATE:
+						// Message received by the server from a client that has done an update of its shared files list
 						UserUpdateMessage um = (UserUpdateMessage) m;
 						server.updateUser(um.getId(), um.getDataToShare());
 						break;
 						
 					case ERROR:
+						// Error message, mainly for unavailable files purposes
 						ServerConsole.print(((ErrorMessage)m).getMessage());
 						break;
 						

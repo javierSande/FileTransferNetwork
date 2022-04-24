@@ -13,6 +13,15 @@ import java.util.Set;
 import common.Monitor;
 
 public class FilesSet extends Monitor {
+	
+	/* FilesSet
+	 * 
+	 * This class represents a set of the files that a user has available.
+	 * As we have the readers-writers problem to access these available files,
+	 * each method that tries to read or write data should follow the protocol
+	 * of the Monitor class.
+	 */
+	
 	private Set<String> fileList;
 	
 	public FilesSet() {

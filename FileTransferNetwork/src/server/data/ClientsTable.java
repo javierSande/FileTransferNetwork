@@ -16,6 +16,20 @@ import common.Monitor;
 import common.User;
 
 public class ClientsTable extends Monitor {
+	
+	/* ClientsTable
+	 *  
+	 * This class represent a table that pairs every client identifier
+	 * with the client itself. Its goal is to speed up the process of 
+	 * checking the data of a given user, taking into account that the
+	 * access to a hash map is done in constant time (O(1)).
+	 * If we didn't have this hash map, we would have to traverse the
+	 * clients list in linear time (O(n)) every time we want to check
+	 * something of a client.
+	 * As we have the readers-writers problem, each method that tries to
+	 * read or write data should follow the protocol of the Monitor class.
+	 */
+	
 	private Map<Integer, User> users;
 	
 	public ClientsTable() {
