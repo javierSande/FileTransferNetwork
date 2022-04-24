@@ -40,9 +40,10 @@ public class SharedFilesTableModel extends AbstractTableModel implements Observe
 	
 	@Override
 	public synchronized void update(Client c) {
-		files = new ArrayList<String>(c.getSharedFiles());
-		fireTableStructureChanged();
-		notify();
+		List<String> sharedFiles = new ArrayList<String>(c.getSharedFiles());
+		if (!files.equals(sharedFiles)) {
+			files = sharedFiles;
+			fireTableStructureChanged();
+		}
 	}
-
 }

@@ -40,8 +40,11 @@ public class ServerFilesTableModel extends AbstractTableModel implements Observe
 	
 	@Override
 	public synchronized void update(Client c) {
-		files = c.getFiles();
-		fireTableStructureChanged();
+		List<String> serverFiles = c.getFiles();
+		if (!files.equals(serverFiles)) {
+			files = serverFiles;
+			fireTableStructureChanged();
+		}
 	}
 
 }

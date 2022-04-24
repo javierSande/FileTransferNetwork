@@ -14,7 +14,7 @@ public abstract class Monitor {
 	}
 	
 	protected void startWrite() {
-		if (nReaders > 0)
+		while (nReaders > 0)
 			try { wait(); } catch (InterruptedException e) { return; }
 	}
 }

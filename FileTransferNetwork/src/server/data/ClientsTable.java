@@ -15,11 +15,12 @@ public class ClientsTable extends Monitor {
 		users = new HashMap<Integer, User>();
 	}
 	
-	// TODO users.values() java lo considera una modificación
-	public synchronized List<User> getUsers() {
+	public List<User> getUsers() {
+		startRead();
 		List<User> list = new ArrayList<User>();
 		for (User u: users.values()) 
 			list.add(u.clone());
+		endRead();
 		return list;
 	}
 	
