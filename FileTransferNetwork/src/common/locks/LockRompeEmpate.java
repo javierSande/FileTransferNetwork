@@ -1,3 +1,10 @@
+/*
+ * Programacion Concurrente - Practica Final
+ * Curso 2021/22
+ * Prof.: Elvira Albert Albiol
+ * Alumnos: Javier Sande Rios, Mario Sanz Guerrero
+ */
+
 package common.locks;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 
@@ -7,8 +14,6 @@ public class LockRompeEmpate implements Lock {
 	private volatile AtomicIntegerArray last;
 	private int n;
 	
-	
-
 	public LockRompeEmpate(int n) {
 		in = new AtomicIntegerArray(n+1);
 		last = new AtomicIntegerArray(n+1);

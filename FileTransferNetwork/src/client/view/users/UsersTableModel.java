@@ -1,3 +1,10 @@
+/*
+ * Programacion Concurrente - Practica Final
+ * Curso 2021/22
+ * Prof.: Elvira Albert Albiol
+ * Alumnos: Javier Sande Rios, Mario Sanz Guerrero
+ */
+
 package client.view.users;
 
 import java.util.ArrayList;
@@ -51,7 +58,7 @@ public class UsersTableModel extends AbstractTableModel implements Observer<Clie
 	}
 	
 	@Override
-	public void update(Client c) {
+	public synchronized void update(Client c) {
 		users = c.getUserList();
 		fireTableStructureChanged();
 	}

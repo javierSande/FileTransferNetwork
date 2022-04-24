@@ -1,3 +1,10 @@
+/*
+ * Programacion Concurrente - Practica Final
+ * Curso 2021/22
+ * Prof.: Elvira Albert Albiol
+ * Alumnos: Javier Sande Rios, Mario Sanz Guerrero
+ */
+
 package server.view.files;
 
 import java.awt.BorderLayout;

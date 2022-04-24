@@ -1,3 +1,10 @@
+/*
+ * Programacion Concurrente - Practica Final
+ * Curso 2021/22
+ * Prof.: Elvira Albert Albiol
+ * Alumnos: Javier Sande Rios, Mario Sanz Guerrero
+ */
+
 package server;
 
 import java.io.IOException;
@@ -33,9 +40,15 @@ public class Server implements Observable<Server> {
 	
 	private boolean active;
 	
+	// activeLock: used to atomically check if the server is active
 	private ReentrantLock activeLock = new ReentrantLock();
+	// userIdsLock: used to atomically access the number of users and assign
+	// an index to a new user
 	private ReentrantLock userIdsLock = new ReentrantLock();
+	// connectionsLock: used to atomically access the connections list (contains
+	// the ClientListeners)
 	private ReentrantLock connectionsLock = new ReentrantLock();
+	// observersLock: used to atomically access the observers list (tables for the GUI)
 	private ReentrantLock observersLock = new ReentrantLock();
 	
 	private List<ClientListener> connections;
@@ -147,7 +160,8 @@ public class Server implements Observable<Server> {
 	 * 
 	 * First, updates the server status to inactive to avoid new clients to connect.
 	 * Then, starts to send terminate the connections.
-	 * Finally, waits to all the client listeners to end their sessions.
+	 * Finally, waits to all the client listeners to end their sessions. This is done through
+	 * the arrival of the ConfirmTerminateMessage to each ClientListener.
 	 **/
 	
 	public void endSession() throws Exception {
@@ -219,6 +233,7 @@ public class Server implements Observable<Server> {
 		observersLock.unlock();
 	}
 	
+	// TODO: Esta funcion no se usa, pero no se si prefieres dejarla
 	@Override
 	public void removeObserver(Observer<Server> o) {
 		observersLock.lock();

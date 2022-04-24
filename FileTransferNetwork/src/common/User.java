@@ -1,3 +1,10 @@
+/*
+ * Programacion Concurrente - Practica Final
+ * Curso 2021/22
+ * Prof.: Elvira Albert Albiol
+ * Alumnos: Javier Sande Rios, Mario Sanz Guerrero
+ */
+
 package common;
 
 import java.io.IOException;
@@ -21,6 +28,7 @@ public class User extends Monitor implements Serializable {
 	private final int serverPort;
 	private final int clientPort;
 	
+	// outputLock: used to atomically access the output stream
 	private transient ReentrantLock outputLock = new ReentrantLock();
 	
 	private transient ObjectOutputStream out;

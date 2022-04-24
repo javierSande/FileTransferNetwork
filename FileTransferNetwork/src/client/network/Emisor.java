@@ -1,3 +1,10 @@
+/*
+ * Programacion Concurrente - Practica Final
+ * Curso 2021/22
+ * Prof.: Elvira Albert Albiol
+ * Alumnos: Javier Sande Rios, Mario Sanz Guerrero
+ */
+
 package client.network;
 
 import java.io.File;
@@ -13,6 +20,7 @@ import client.Client;
 import common.messages.*;
 
 public class Emisor extends Thread {
+	
 	private Client client;
 	
 	private String receiverIp;

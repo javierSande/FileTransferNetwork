@@ -1,3 +1,10 @@
+/*
+ * Programacion Concurrente - Practica Final
+ * Curso 2021/22
+ * Prof.: Elvira Albert Albiol
+ * Alumnos: Javier Sande Rios, Mario Sanz Guerrero
+ */
+
 package client.network;
 
 import java.io.File;
@@ -38,7 +45,7 @@ public class Receptor extends Thread {
 		
 		Message m = (Message) in.readObject();
 		
-		while (m.type == MessageType.DATA) {  
+		while (m.type == MessageType.DATA) {
 			byte[] b = ((DataMessage) m).getData();
 			int size = ((DataMessage) m).getSize();
 			fw.write (b, 0, size);

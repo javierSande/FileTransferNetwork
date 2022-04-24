@@ -1,3 +1,10 @@
+/*
+ * Programacion Concurrente - Practica Final
+ * Curso 2021/22
+ * Prof.: Elvira Albert Albiol
+ * Alumnos: Javier Sande Rios, Mario Sanz Guerrero
+ */
+
 package client.data;
 
 import java.util.HashMap;
@@ -8,7 +15,15 @@ import java.util.Set;
 
 import common.Monitor;
 
-public class SharedFilesMap  extends Monitor {
+public class SharedFilesMap extends Monitor {
+	
+	/* SharedFilesMap
+	 * 
+	 * This class represents a map that pairs every file with its absolute path
+	 * so that it can be accessed.
+	 * It has the readers-writers problem, that is why it extends the Monitor class.
+	 */
+	
 	private Map<String,String> filesMap;
 
 	public SharedFilesMap() {

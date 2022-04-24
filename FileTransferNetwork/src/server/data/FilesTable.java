@@ -1,3 +1,10 @@
+/*
+ * Programacion Concurrente - Practica Final
+ * Curso 2021/22
+ * Prof.: Elvira Albert Albiol
+ * Alumnos: Javier Sande Rios, Mario Sanz Guerrero
+ */
+
 package server.data;
 
 import java.util.HashMap;
@@ -10,13 +17,24 @@ import common.Monitor;
 import common.User;
 
 public class FilesTable extends Monitor {
+	
+	/* FilesTable
+	 * 
+	 * This class represents the table of data that assigns each file name
+	 * with a set of users that have that file.
+	 * When a file is requested by a client, the sender of this file is chosen
+	 * randomly among the users that have that file.
+	 * As we have the readers-writers problem, each method that tries to read or
+	 * write data should follow the protocol of the Monitor class.
+	 **/
+	
 	private Map<String, Set<User>> fileMap;
 	
 	public FilesTable() {
 		fileMap = new HashMap<String, Set<User>>();
 	}
 	
-	public synchronized Set<String> getFiles() {
+	public Set<String> getFiles() {
 		startRead();
 		Set<String> list = new HashSet<String>();
 		for (String f: fileMap.keySet()) 
@@ -27,10 +45,11 @@ public class FilesTable extends Monitor {
 	
 	/* public synchronized User getSender(String file)
 	 * 
-	 * Returns a random sender for the 
+	 * Returns a random sender for the requested file among the users that 
+	 * have that file available.
 	 **/
 	
-	public synchronized User getSender(String file) {
+	public User getSender(String file) {
 		startRead();
 		User sender = null;
 		if (fileMap.containsKey(file)) {
