@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.swing.JOptionPane;
 
@@ -30,6 +31,9 @@ public class ClientListener extends Thread {
 	private Socket socket;
 	private ObjectOutputStream out;
 	private ObjectInputStream in;
+	
+	// activeLock: used to atomically check if the listener is active
+	private ReentrantLock activeLock = new ReentrantLock();
 
 	public ClientListener(Server server, Socket socket) throws IOException {
 		this.server = server;
@@ -70,20 +74,26 @@ public class ClientListener extends Thread {
 	}
 	
 	public void endConnection() throws Exception {
-		try {
-			user.sendMessage(new TerminateMessage(server.getIp(), user.getIp()));
-		} catch (Exception e) {
-			ServerConsole.print("Failed to disconnect from server!");
-			e.printStackTrace();
-		}
+		activeLock.lock();
+		if (active)
+			try {
+				user.sendMessage(new TerminateMessage(server.getIp(), user.getIp()));
+			} catch (Exception e) {
+				ServerConsole.print("Failed to disconnect from server!");
+				e.printStackTrace();
+			}
+		activeLock.unlock();
 	}
 	
 	public void update(Server s) {
-		try {
-			user.sendMessage(new ServerUpdateMessage(server.getIp(), user.getIp(), server.getUsers(), server.getFiles()));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		activeLock.lock();
+		if (active)
+			try {
+				user.sendMessage(new ServerUpdateMessage(server.getIp(), user.getIp(), server.getUsers(), server.getFiles()));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		activeLock.unlock();
 	}
 
 	@Override
@@ -91,7 +101,9 @@ public class ClientListener extends Thread {
 		try {
 			ServerConsole.print("Client requests connection");
 			
+			activeLock.lock();
 			active = startConnection();
+			activeLock.unlock();
 			
 			server.addConnection(this);
 			
@@ -110,8 +122,12 @@ public class ClientListener extends Thread {
 						
 					case CONFIRM_TERMINATE:
 						// Confirmation of end of session received by the server from every client when the server
-						// wants to end the connection (it previously telled all the users that the session is going
+						// wants to end the connection (it previously told all the users that the session is going
 						// to finish and every client will confirm its closure through this message)
+						activeLock.lock();
+						active = false;
+						activeLock.unlock();
+						
 						server.removeConnection(this);
 						server.removeUser(user);
 						
@@ -121,7 +137,6 @@ public class ClientListener extends Thread {
 						
 						ServerConsole.print(String.format("Client %d disconnects from server", user.getId()));
 						
-						active = false;
 						break;
 						
 					case FILE_REQUEST:
@@ -143,12 +158,15 @@ public class ClientListener extends Thread {
 						// Message received by the server from a client that wants to close its connection. The difference
 						// with CONFIRM_TERMINATE is that, in this case, it is an independent client who wants to close the
 						// connection with the server.
+						activeLock.lock();
+						active = false;
+						activeLock.unlock();
+						
 						user.sendMessage(new ConfirmTerminateMessage(server.getIp(), user.getIp()));
 						server.removeConnection(this);
 						server.removeUser(user);
 						
 						ServerConsole.print(String.format("Client %d disconnects from server", user.getId()));
-						active = false;
 						break;
 						
 					case USER_LIST:

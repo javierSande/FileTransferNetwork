@@ -8,7 +8,6 @@
 package client.network;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.RandomAccessFile;
 import java.net.Socket;
@@ -25,14 +24,18 @@ public class Receptor extends Thread {
 	
 	private Client client;
 	
+	private String ip;
+	private int port;
+	
 	private Socket socket;
 	private ObjectInputStream in;
 	
 	private String file;
 
-	public Receptor(Client client, String ip, int port, String file) throws IOException {
+	public Receptor(Client client, String ip, int port, String file) {
 		this.client = client;
-		this.socket = new Socket(ip,port);
+		this.ip =ip;
+		this.port = port;
 		this.file = file;
 	}
 	
@@ -69,6 +72,7 @@ public class Receptor extends Thread {
 	@Override
 	public void run() {	
 		try {
+			this.socket = new Socket(ip,port);
 			in = new ObjectInputStream(socket.getInputStream());
 			saveFile();
 		} catch (Exception e) {

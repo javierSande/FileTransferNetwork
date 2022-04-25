@@ -253,19 +253,14 @@ public class Client implements Observable<Client> {
 			
 			Message m = (Message) in.readObject();
 			
-			int retries = 3;
-			
-			while (m.type != MessageType.CONFIRM_CONNECTION) {
-				retries--;
-				if (retries == 0) { 
-					JOptionPane.showMessageDialog(null, "Incorrect response from server");
-					return false;
-				}
+			if (m.type != MessageType.CONFIRM_CONNECTION) {
+				JOptionPane.showMessageDialog(null, "Incorrect response from server");
+				return false;
 			}
 			
 			ConfirmConnectionMessage cm = (ConfirmConnectionMessage) m;
 			id = cm.getUser().getId();
-			out.writeObject(new UserListMessage(ip, serverIp));
+			sendMessage(new UserListMessage(ip, serverIp));
 			
 			m = (Message) in.readObject();
 			

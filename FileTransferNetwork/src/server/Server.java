@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -23,6 +24,7 @@ import common.Observable;
 import common.Observer;
 import common.User;
 import common.messages.Message;
+import server.console.ServerConsole;
 import server.data.ClientsTable;
 import server.data.FilesTable;
 import server.network.ClientListener;
@@ -212,6 +214,12 @@ public class Server implements Observable<Server> {
 		connectionsLock.unlock();
 	}
 	
+	
+	/* public void sendMessageToUser(int id, Message m)
+	 * 
+	 * Sends a message to a user
+	 **/
+	
 	public void sendMessageToUser(int id, Message m) throws IOException {
 		getUser(id).sendMessage(m);
 	}
@@ -277,6 +285,8 @@ public class Server implements Observable<Server> {
 				c.start();
 			}
 			
+		}  catch (SocketException e) {
+			ServerConsole.print("Socket closed!");
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(null, e.getMessage(), "SERVER ERROR", JOptionPane.ERROR_MESSAGE);	
 			e.printStackTrace();

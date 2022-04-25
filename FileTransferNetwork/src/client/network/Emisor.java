@@ -21,6 +21,8 @@ import common.messages.*;
 
 public class Emisor extends Thread {
 	
+	private static final int TIMEOUT = 5000;
+	
 	private Client client;
 	
 	private String receiverIp;
@@ -74,7 +76,9 @@ public class Emisor extends Thread {
 		try {
 			client.getSemaphore().acquire();
 			
+			socket.setSoTimeout(TIMEOUT);
 			Socket s = socket.accept();
+			
 			out = new ObjectOutputStream(s.getOutputStream());
 			receiverIp = s.getInetAddress().getHostAddress();
 			
