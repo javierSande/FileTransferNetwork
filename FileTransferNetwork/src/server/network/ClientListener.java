@@ -93,6 +93,8 @@ public class ClientListener extends Thread {
 			
 			active = startConnection();
 			
+			server.addConnection(this);
+			
 			ServerConsole.print(String.format("Client %d connects to server", user.getId()));
 			
 			while (active) {

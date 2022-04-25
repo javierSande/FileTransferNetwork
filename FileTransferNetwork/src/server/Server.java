@@ -188,16 +188,14 @@ public class Server implements Observable<Server> {
 	 * If not, closes the socket with the new user.
 	 **/
 	
-	public void addConnection(Socket s) throws IOException {
+	public void addConnection(ClientListener l) throws Exception {
 		activeLock.lock();
 		if (active) {
 			connectionsLock.lock();
-			ClientListener c = new ClientListener(this, s);
-			c.start();
-			connections.add(c);
+			connections.add(l);
 			connectionsLock.unlock();
 		} else {
-			s.close();
+			l.endConnection();
 		}
 		activeLock.unlock();
 	}
@@ -275,7 +273,8 @@ public class Server implements Observable<Server> {
 			
 			while(server.isActive()) {
 				Socket s = server.socket.accept();
-				server.addConnection(s);
+				ClientListener c = new ClientListener(server, s);
+				c.start();
 			}
 			
 		} catch (Exception e) {

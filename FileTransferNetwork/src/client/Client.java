@@ -11,7 +11,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -248,17 +247,20 @@ public class Client implements Observable<Client> {
 	private boolean startConnection() {
 		ClientConsole.print(Writer.CLIENT, "Starting connection...");
 		try {			
-			ip = InetAddress.getLocalHost().getHostAddress();
+			ip = socket.getLocalAddress().getHostAddress();
 			
 			out.writeObject(new ConnectionMessage(ip, serverIp, name, new HashSet<String>(filesToShare.getFiles())));
 			
 			Message m = (Message) in.readObject();
 			
-			if (m.type != MessageType.CONFIRM_CONNECTION) {
-				m = (Message) in.readObject();
-			} else {
-				JOptionPane.showMessageDialog(null, "Incorrect response from server");
-				return false;
+			int retries = 3;
+			
+			while (m.type != MessageType.CONFIRM_CONNECTION) {
+				retries--;
+				if (retries == 0) { 
+					JOptionPane.showMessageDialog(null, "Incorrect response from server");
+					return false;
+				}
 			}
 			
 			ConfirmConnectionMessage cm = (ConfirmConnectionMessage) m;
