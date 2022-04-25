@@ -30,7 +30,7 @@ public class ClientsTable extends Monitor {
 	 * read or write data should follow the protocol of the Monitor class.
 	 */
 	
-	private Map<Integer, User> users;
+	private volatile Map<Integer, User> users;
 	
 	public ClientsTable() {
 		users = new HashMap<Integer, User>();

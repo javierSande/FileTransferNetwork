@@ -76,7 +76,7 @@ public class Receptor extends Thread {
 			in = new ObjectInputStream(socket.getInputStream());
 			saveFile();
 		} catch (Exception e) {
-			JOptionPane.showMessageDialog(null, e.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(null, e.getMessage(), "DOWNLOAD ERROR", JOptionPane.ERROR_MESSAGE);
 			System.err.print(e.getMessage());
 			e.printStackTrace();
 		}

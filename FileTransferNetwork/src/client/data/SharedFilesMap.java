@@ -25,7 +25,7 @@ public class SharedFilesMap extends Monitor {
 	 * Every method reading or writing data should follow the Monitor class protocol.
 	 */
 	
-	private Map<String,String> filesMap;
+	private volatile Map<String,String> filesMap;
 
 	public SharedFilesMap() {
 		filesMap = new HashMap<String,String>();

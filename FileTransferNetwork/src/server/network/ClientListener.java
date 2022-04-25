@@ -23,7 +23,7 @@ import server.console.ServerConsole;
 
 public class ClientListener extends Thread {
 	
-	private boolean active;
+	private volatile boolean active;
 	
 	private Server server;
 	private User user;

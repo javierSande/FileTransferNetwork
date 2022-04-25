@@ -28,7 +28,7 @@ public class FilesTable extends Monitor {
 	 * write data should follow the protocol of the Monitor class.
 	 **/
 	
-	private Map<String, Set<User>> fileMap;
+	private volatile Map<String, Set<User>> fileMap;
 	
 	public FilesTable() {
 		fileMap = new HashMap<String, Set<User>>();

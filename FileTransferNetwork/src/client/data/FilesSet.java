@@ -22,7 +22,7 @@ public class FilesSet extends Monitor {
 	 * of the Monitor class.
 	 */
 	
-	private Set<String> fileList;
+	private volatile Set<String> fileList;
 	
 	public FilesSet() {
 		fileList = new HashSet<String>();

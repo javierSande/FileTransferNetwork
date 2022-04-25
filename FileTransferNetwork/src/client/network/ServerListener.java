@@ -30,7 +30,7 @@ public class ServerListener extends Thread{
 	private ObjectOutputStream out;
 	private ObjectInputStream in;
 	
-	private boolean active;
+	private volatile boolean active;
 
 	public ServerListener(Client client) throws IOException {
 		this.client = client;

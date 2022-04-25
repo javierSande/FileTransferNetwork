@@ -51,7 +51,7 @@ public class Client implements Observable<Client> {
 	
 	private UsersList usersOnServer;
 	private FilesSet filesOnServer;
-	private List<Observer<Client>> observers;
+	private volatile List<Observer<Client>> observers;
 	
 	private Socket socket;
 	private ObjectOutputStream out;

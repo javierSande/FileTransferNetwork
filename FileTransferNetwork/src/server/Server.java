@@ -40,7 +40,7 @@ public class Server implements Observable<Server> {
 	
 	private ServerSocket socket;
 	
-	private boolean active;
+	private volatile boolean active;
 	
 	// activeLock: used to atomically check if the server is active
 	private ReentrantLock activeLock = new ReentrantLock();
@@ -53,10 +53,10 @@ public class Server implements Observable<Server> {
 	// observersLock: used to atomically access the observers list (tables for the GUI)
 	private ReentrantLock observersLock = new ReentrantLock();
 	
-	private List<ClientListener> connections;
-	private int nUsers;
+	private volatile List<ClientListener> connections;
+	private volatile int nUsers;
 	
-	private List<Observer<Server>> observers;
+	private volatile List<Observer<Server>> observers;
 	
 	public Server() throws IOException {
 		active = true;

@@ -23,7 +23,7 @@ public class UsersList extends Monitor {
 	 * follow the protocol of the Monitor class.
 	 */
 	
-	private List<User> users;
+	private volatile List<User> users;
 	
 	public UsersList() {
 		users = new ArrayList<User>();
