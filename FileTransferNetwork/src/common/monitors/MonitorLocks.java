@@ -1,3 +1,9 @@
+/*
+ * Programacion Concurrente - Practica Final
+ * Curso 2021/22
+ * Prof.: Elvira Albert Albiol
+ * Alumnos: Javier Sande Rios, Mario Sanz Guerrero
+ */
 package common.monitors;
 
 import java.util.concurrent.locks.Condition;
@@ -23,7 +29,7 @@ public abstract class MonitorLocks implements Monitor {
 		lock.unlock();
 	}
 	
-	public synchronized void endRead() {
+	public void endRead() {
 		lock.lock();
 		nr -= 1;
 		if (nr == 0) {
@@ -32,7 +38,7 @@ public abstract class MonitorLocks implements Monitor {
 		lock.unlock();
 	}
 	
-	public synchronized void startWrite() {
+	public void startWrite() {
 		lock.lock();
 		while(nr > 0 || nw > 0) {
 			try {
@@ -45,7 +51,7 @@ public abstract class MonitorLocks implements Monitor {
 		lock.unlock();
 	}
 	
-	public synchronized void endWrite() {
+	public void endWrite() {
 		lock.lock();
 		nw--;
 		ok_to_write.signal();
