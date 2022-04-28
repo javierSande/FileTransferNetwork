@@ -10,7 +10,8 @@ public abstract class MonitorLocks implements Monitor {
 	private Condition ok_to_read = lock.newCondition();
 	private Condition ok_to_write = lock.newCondition();
 	
-	public synchronized void startRead() {
+	public void startRead() {
+		lock.lock();
 		while(nw > 0) {
 			try {
 				ok_to_read.await();
@@ -19,16 +20,20 @@ public abstract class MonitorLocks implements Monitor {
 			}
 		}
 		nr++;
+		lock.unlock();
 	}
 	
 	public synchronized void endRead() {
+		lock.lock();
 		nr -= 1;
 		if (nr == 0) {
 			ok_to_write.signal();
 		}
+		lock.unlock();
 	}
 	
 	public synchronized void startWrite() {
+		lock.lock();
 		while(nr > 0 || nw > 0) {
 			try {
 				ok_to_write.await();
@@ -37,11 +42,14 @@ public abstract class MonitorLocks implements Monitor {
 			}
 		}
 		nw++;
+		lock.unlock();
 	}
 	
 	public synchronized void endWrite() {
+		lock.lock();
 		nw--;
 		ok_to_write.signal();
 		ok_to_read.signalAll();
+		lock.unlock();
 	}
 }
