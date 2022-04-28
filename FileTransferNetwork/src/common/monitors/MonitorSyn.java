@@ -5,9 +5,9 @@
  * Alumnos: Javier Sande Rios, Mario Sanz Guerrero
  */
 
-package common;
+package common.monitors;
 
-public abstract class Monitor {
+public abstract class MonitorSyn implements Monitor {
 	
 	/* Monitor
 	 * 
@@ -22,18 +22,22 @@ public abstract class Monitor {
 	
 	public int nReaders = 0;
 	
-	protected synchronized void startRead() {
+	public synchronized void startRead() {
 		nReaders++;
 	}
 	
-	protected synchronized void endRead() {
+	public synchronized void endRead() {
 		nReaders--;
 		if (nReaders == 0)
 			notify();
 	}
 	
-	protected void startWrite() {
+	public void startWrite() {
 		while (nReaders > 0)
 			try { wait(); } catch (InterruptedException e) { return; }
+	}
+	
+	public void endWrite() {
+		notify();
 	}
 }

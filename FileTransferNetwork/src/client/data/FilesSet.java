@@ -10,9 +10,9 @@ package client.data;
 import java.util.HashSet;
 import java.util.Set;
 
-import common.Monitor;
+import common.monitors.MonitorSyn;
 
-public class FilesSet extends Monitor {
+public class FilesSet extends MonitorSyn {
 	
 	/* FilesSet
 	 * 
@@ -31,7 +31,7 @@ public class FilesSet extends Monitor {
 	public synchronized void setFiles(Set<String> list) {
 		startWrite();
 		fileList = list;
-		notify();
+		endWrite();
 	}
 	
 	public Set<String> getFiles() {

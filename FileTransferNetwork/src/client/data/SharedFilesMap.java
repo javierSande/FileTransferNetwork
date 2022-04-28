@@ -13,9 +13,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import common.Monitor;
+import common.monitors.MonitorLocks;
 
-public class SharedFilesMap extends Monitor {
+public class SharedFilesMap extends MonitorLocks {
 	
 	/* SharedFilesMap
 	 * 
@@ -45,28 +45,28 @@ public class SharedFilesMap extends Monitor {
 		return files;
 	}
 	
-	public synchronized void addFiles(Map<String, String> files) {
+	public void addFiles(Map<String, String> files) {
 		startWrite();
 		filesMap.putAll(files);
-		notify();
+		endWrite();
 	}
 	
-	public synchronized void addFile(String file, String path) {
+	public void addFile(String file, String path) {
 		startWrite();
 		filesMap.put(file, path);
-		notify();
+		endWrite();
 	}
 	
-	public synchronized void deleteFiles(List<String> files) {
+	public void deleteFiles(List<String> files) {
 		startWrite();
 		for (String f: files)
 			filesMap.remove(f);
-		notify();
+		endWrite();
 	}
 	
-	public synchronized void deleteFile(String file) {
+	public void deleteFile(String file) {
 		startWrite();
 		filesMap.remove(file);
-		notify();
+		endWrite();
 	}
 }

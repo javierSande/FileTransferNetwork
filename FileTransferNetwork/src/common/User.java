@@ -17,8 +17,9 @@ import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
 import common.messages.Message;
+import common.monitors.MonitorSyn;
 
-public class User extends Monitor implements Serializable {
+public class User extends MonitorSyn implements Serializable {
 	
 	/* User
 	 * 
@@ -117,14 +118,14 @@ public class User extends Monitor implements Serializable {
 	public synchronized void setSharedData(Set<String> files) {
 		startWrite();
 		sharedData = files;
-		notify();
+		endWrite();
 	}
 
 	// Add data to share
 	public synchronized void shareData(String filepath) {
 		startWrite();
 		sharedData.add(filepath);
-		notify();
+		endWrite();
 	}
 	
 	public String toString() {

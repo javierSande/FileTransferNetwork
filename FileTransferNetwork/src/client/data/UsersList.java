@@ -10,10 +10,10 @@ package client.data;
 import java.util.ArrayList;
 import java.util.List;
 
-import common.Monitor;
 import common.User;
+import common.monitors.MonitorSyn;
 
-public class UsersList extends Monitor {
+public class UsersList extends MonitorSyn {
 	
 	/* UsersList
 	 * 
@@ -32,7 +32,7 @@ public class UsersList extends Monitor {
 	public synchronized void setUsers(List<User> list) {
 		startWrite();
 		users = list;
-		notify();
+		endWrite();
 	}
 	
 	public List<User> getUsers() {

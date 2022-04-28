@@ -59,7 +59,7 @@ public class Client implements Observable<Client> {
 	
 	private ServerListener listener;
 	
-	private Semaphore transmissionSempaphore;
+	private Semaphore transmissionSemaphore;
 	private ReentrantLock observersLock;
 	
 	// outputLock: used to atomically access the output stream
@@ -79,7 +79,7 @@ public class Client implements Observable<Client> {
 		this.filesOnServer = new FilesSet();
 		this.observers = new ArrayList<Observer<Client>>();
 		
-		transmissionSempaphore = new Semaphore(MAX_TRANSMISSIONS);
+		transmissionSemaphore = new Semaphore(MAX_TRANSMISSIONS);
 		observersLock = new ReentrantLock();
 		
 		out = new ObjectOutputStream(socket.getOutputStream());
@@ -135,7 +135,7 @@ public class Client implements Observable<Client> {
 	}
 	
 	public Semaphore getSemaphore() {
-		return transmissionSempaphore;
+		return transmissionSemaphore;
 	}
 	
 	

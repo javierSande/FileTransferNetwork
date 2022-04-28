@@ -13,10 +13,10 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-import common.Monitor;
 import common.User;
+import common.monitors.MonitorSyn;
 
-public class FilesTable extends Monitor {
+public class FilesTable extends MonitorSyn {
 	
 	/* FilesTable
 	 * 
@@ -69,7 +69,7 @@ public class FilesTable extends Monitor {
 				fileMap.put(f, new HashSet<User>());
 			fileMap.get(f).add(u);
 		}
-		notify();
+		endWrite();
 	}
 	
 	public synchronized void removeUserFiles(User u) {
@@ -81,6 +81,6 @@ public class FilesTable extends Monitor {
 					fileMap.remove(f);
 			}
 		}
-		notify();
+		endWrite();
 	}
 }

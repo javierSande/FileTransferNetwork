@@ -12,10 +12,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import common.Monitor;
 import common.User;
+import common.monitors.MonitorSyn;
 
-public class ClientsTable extends Monitor {
+public class ClientsTable extends MonitorSyn {
 	
 	/* ClientsTable
 	 *  
@@ -56,13 +56,13 @@ public class ClientsTable extends Monitor {
 		startWrite();
 		if (!users.containsKey(user.getId()))
 			users.put(user.getId(), user);
-		notify();
+		endWrite();
 	}
 	
 	public synchronized void removeUser(User user) {
 		startWrite();
 		if (users.containsKey(user.getId()))
 			users.remove(user.getId());
-		notify();
+		endWrite();
 	}
 }
