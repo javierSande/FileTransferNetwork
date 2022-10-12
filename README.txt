@@ -1,5 +1,8 @@
-Practica 5 Programación concurrente
+## Proyecto Programación concurrente
 
+Proyecto realizado para la asignatura de Tecnología de la programación de la UCM en el curso 2020/2021
+
+### Autores
 Javier Sande Ríos
 Mario Sanz Guerrero
 
