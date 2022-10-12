@@ -2,14 +2,15 @@
 
 Proyecto realizado para la asignatura de Tecnología de la programación de la UCM en el curso 2020/2021
 
-### Autores
+#### Autores:
 Javier Sande Ríos
 Mario Sanz Guerrero
 
+### Ejecución:
 Método main del Cliente: client/Client.java
 Método main del Servidor: server/Server.java
 
-Notas aclaratorias:
+### Notas aclaratorias:
 
 * Una vez el usuario descarga un archivo, se convierte en un posible emisor del mismo.
 * Es posible seleccionar más de un archivo para descargar. Sin embargo, un cliente solo puede emitir 5 archivos simultáneamente.
